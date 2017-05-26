@@ -4,7 +4,7 @@
 
 - Leox.Injector 注入IL代码的实现，通过在项目属性中切换输出类型来生成dll或者注入工具类exe, Injector.cs中有一个 MethodCache 类已无用，因为缓存是死的，在下次注入时模块的版本guid与上次注入模块的版本guid已不同，所以将旧版本的方法注入到新的模块会报错。
 
-- Leox.BuildTask  MSBuild的实现，即在使用到的项目的csproj中加入以下内容来实现生成后执行该Task，达到注入的功能。
+- Leox.BuildTask  自定义一个MSBuild Task，即在使用到的项目的csproj中加入以下内容来实现在指定项目生成后执行该Inject Task，达到注入的功能。
 ``` xml
   <PropertyGroup>
   <MyTaskDirectory>libs\</MyTaskDirectory>
