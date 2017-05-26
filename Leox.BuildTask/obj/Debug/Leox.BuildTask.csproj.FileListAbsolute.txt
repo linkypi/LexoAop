@@ -2,3 +2,9 @@ D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.BuildTask.dll
 D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.BuildTask.pdb
 D:\projects\Leox\Leox.BuildTask\obj\Debug\Leox.BuildTask.dll
 D:\projects\Leox\Leox.BuildTask\obj\Debug\Leox.BuildTask.pdb
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Mono.Cecil.dll
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.Aop.dll
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.Injector.pdb
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.Aop.pdb
+D:\projects\Leox\Leox.BuildTask\obj\Debug\Leox.BuildTask.csprojResolveAssemblyReference.cache
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.Injector.dll

@@ -47,6 +47,12 @@
   <ItemGroup>
     <None Include="BuildSample.proj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Leox.Injector\Leox.Injector.csproj">
+      <Project>{bf7cf41f-0c2c-4c76-800e-7ea494edc850}</Project>
+      <Name>Leox.Injector</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

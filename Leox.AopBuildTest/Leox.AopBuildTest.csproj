@@ -95,7 +95,7 @@
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
-    <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" TaskFile="$(MyTaskDirectory)Leox.Injector.exe">
+    <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" TaskFile="Leox.Injector.exe">
       <Output PropertyName="path" TaskParameter="Paths" />
     </AopBuildTask>
     <Message Text="build path: $(path)" />

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Leox.Injector;
 
 namespace Leox.BuildTask
 {
@@ -30,7 +31,7 @@ namespace Leox.BuildTask
         {
             try
             {
-                Log.LogMessage(MessageImportance.Normal, "build " + outputFile);
+                Log.LogMessage(MessageImportance.High, "build " + outputFile);
                 Paths = outputFile;
                 int index = outputFile.LastIndexOf("\\");
                 var projectPath = outputFile.Substring(0, index + 1);
@@ -39,17 +40,9 @@ namespace Leox.BuildTask
 
                 //Log.LogMessage(MessageImportance.Normal, string.Format("build project path :{0}, project name: {1} .", projectPath, projectName));
 
-                var binPath = Path.Combine(projectPath, "bin", "Debug");
-                DirectoryInfo directory = new DirectoryInfo(binPath);
-                BuildByCmd(projectName + ".exe");
+                //BuildByCmd(projectPath, projectName + ".exe");
 
-                //var injector = new Injector();
-                //foreach (var item in directory.GetFiles().Where(f => _fileSuffix.Any(s => f.Name.EndsWith(s))))
-                //{
-                //    Log.LogMessage(MessageImportance.Normal, "find attr from " + item.FullName);
-                //    injector.Inject(item.FullName);
-                //}
-                //BuildByCmd(Path.Combine("bin", "Debug", projectName + ".exe"));
+                Build(projectPath);
             }
             catch (Exception ex)
             {
@@ -60,7 +53,39 @@ namespace Leox.BuildTask
             return true;
         }
 
-        private void BuildByCmd(string file)
+        private void Build(string projectPath)
+        {
+            //将libs中的dll复制到obj/Debug中  否则直接使用Inject执行会找不到 Leox.Aop.dll
+            var objPath = Path.Combine(projectPath, "obj", "Debug");
+            var binPath = Path.Combine(projectPath, "bin", "Debug");
+            if (!Directory.Exists(objPath)) Directory.CreateDirectory(objPath);
+           
+            DirectoryInfo libsDir = new DirectoryInfo(Path.Combine(projectPath, "libs"));
+            foreach (var item in libsDir.GetFiles())
+            {
+                string filename = Path.Combine(objPath, item.Name);
+                File.Copy(item.FullName, filename, true);
+                Log.LogMessage(MessageImportance.High, string.Format("copy file {0} -> {1}", item.FullName, filename));
+            }
+
+            DirectoryInfo objDirectory = new DirectoryInfo(objPath);
+            var injector = new Injector.Injector();
+            var files = objDirectory.GetFiles().Where(f => _fileSuffix.Any(s => f.Name.EndsWith(s)
+                && !f.Name.Contains(".vshost") && !f.Name.Equals("Leox.Injector.exe")));
+
+            foreach (var item in files)
+            {
+                Log.LogMessage(MessageImportance.High, "find attr from " + item.FullName);
+                var injected = injector.Inject(item.FullName);
+
+                if (!injected) { Log.LogMessage(MessageImportance.High, "not found attr ."); continue; }
+
+                File.Copy(item.FullName, Path.Combine(binPath, item.Name), true);
+                Log.LogMessage(MessageImportance.High, "inject finished .");
+            }
+        }
+
+        private void BuildByCmd(string projectPath,string file)
         {
             using (Process process = new Process())
             {
@@ -72,13 +97,15 @@ namespace Leox.BuildTask
                 process.StartInfo.CreateNoWindow = true;
                 process.Start();
                 process.StandardInput.AutoFlush = true;
-                process.StandardInput.WriteLine("cd bin/Debug");
+                process.StandardInput.WriteLine("cd obj/Debug");
                 process.StandardInput.WriteLine(TaskFile + " " + file);
+                process.StandardInput.WriteLine(string.Format("copy {0} {1}/bin/Debug/{0}", file, Path.Combine(projectPath , file)));
+
                 process.StandardInput.WriteLine("exit");
                 string strRst = process.StandardOutput.ReadToEnd();
 
                 process.WaitForExit();
-                process.Close();
+                //process.Close();
                 Log.LogMessage(strRst);
                 Log.LogWarning(strRst);
             }

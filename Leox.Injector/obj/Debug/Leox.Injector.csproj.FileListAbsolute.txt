@@ -7,5 +7,5 @@ D:\projects\Leox\Leox.Injector\bin\Debug\Mono.Cecil.Pdb.dll
 D:\projects\Leox\Leox.Injector\bin\Debug\Mono.Cecil.Rocks.dll
 D:\projects\Leox\Leox.Injector\bin\Debug\Leox.Aop.pdb
 D:\projects\Leox\Leox.Injector\obj\Debug\Leox.Injector.pdb
-D:\projects\Leox\Leox.Injector\bin\Debug\Leox.Injector.dll
-D:\projects\Leox\Leox.Injector\obj\Debug\Leox.Injector.dll
+D:\projects\Leox\Leox.Injector\bin\Debug\Leox.Injector.exe
+D:\projects\Leox\Leox.Injector\obj\Debug\Leox.Injector.exe

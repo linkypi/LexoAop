@@ -10,7 +10,7 @@ namespace Leox.Injector
     {
         static void Main(string[] args)
         {
-            string path = @"BuildTest.exe";
+            string path = @"D:\projects\Leox\Leox.AopBuildTest\obj\Debug\Leox.Injector.exe";
             if (args != null && args.Length > 0)
                 path = args[0];
             new Injector().Inject(path);

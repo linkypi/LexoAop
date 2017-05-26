@@ -12,18 +12,20 @@ namespace Leox.Injector
 {
     public class Injector
     {
-        public void Inject(string path)
+        public bool Inject(string path)
         {
             AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(path);
+            bool injected = false;
 
             foreach (var module in assembly.Modules)
             {
-                CheckModule(module);
+                injected = injected || CheckModule(module);
             }
             assembly.Write(path);
+            return injected;
         }
 
-        private void CheckModule(ModuleDefinition module)
+        private bool CheckModule(ModuleDefinition module)
         {
             //在模块中获取所有非系统指定的类型
             var types = module.Types.Where(t => !t.IsSpecialName)
@@ -32,7 +34,7 @@ namespace Leox.Injector
             //获取有使用AopAtrribute的类型
             //types = types.Where(a => a.CustomAttributes.Any(b =>
             //IsSubClassOf(b.AttributeType.Resolve(), a.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
-
+            bool injected = false;
             foreach (var type in types)
             {
                 var methods = type.Methods.Where(m => !m.IsSpecialName && !m.IsSetter && !m.IsGetter).ToList();
@@ -40,20 +42,24 @@ namespace Leox.Injector
                           IsSubClassOf(b.AttributeType.Resolve(), m.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
                 foreach (var method in methods)
                 {
-                    InjectMethod(method);
+                    if (!methods.Any(m => m.Name == string.Format("_{0}_", method.Name)))
+                    {
+                        InjectMethod(method);
+                        injected = true;
+                    }
                 }
             }
-
+            return injected;
         }
 
         private void InjectMethod(MethodDefinition method)
         {
             //复制该方法
-            CopyMethod(method);
+            var newMethod = CopyMethod(method);
             //清除原始方法 
             ClearOriginMethod(method);
             //重写原有方法
-            OverrideOriginMethod(method);
+            OverrideOriginMethod(method, newMethod);
         }
 
         public class MethodCache
@@ -89,7 +95,7 @@ namespace Leox.Injector
             }
         }
 
-        private void OverrideOriginMethod(MethodDefinition method)
+        private void OverrideOriginMethod(MethodDefinition method, MethodDefinition newMethod)
         {
             try
             {
@@ -114,7 +120,7 @@ namespace Leox.Injector
                 InjectOnStart(method, module, varMethod, varStacks);
 
                 // call this.TargetMethod(...)
-                CallTargetMethod(method, ilprosor);
+                CallTargetMethod(method, ilprosor, newMethod);
 
                 InjectOnEnd(method, module, varStacks);
 
@@ -164,7 +170,7 @@ namespace Leox.Injector
             }
         }
 
-        private void CallTargetMethod(MethodDefinition method, ILProcessor ilprosor)
+        private void CallTargetMethod(MethodDefinition method, ILProcessor ilprosor,MethodDefinition newMethod)
         {
             Append(ilprosor, new[] 
              { 
@@ -175,7 +181,7 @@ namespace Leox.Injector
 
             Append(ilprosor, new[] 
              { 
-                ilprosor.Create(OpCodes.Call,MethodCache.Get(method.Name)),
+                ilprosor.Create(OpCodes.Call,newMethod),//MethodCache.Get(method.Name)
              });
         }
 
@@ -308,7 +314,7 @@ namespace Leox.Injector
 
         private static MethodDefinition CopyMethod(MethodDefinition method)
         {
-            if (MethodCache.Contains(method.Name)) return MethodCache.Get(method.Name);
+            //if (MethodCache.Contains(method.Name)) return MethodCache.Get(method.Name);
 
             string methodName = string.Format("_{0}_", method.Name);
             MethodDefinition newMethod = new MethodDefinition(methodName, method.Attributes, method.ReturnType);
@@ -326,14 +332,14 @@ namespace Leox.Injector
             newMethod.Body.InitLocals = method.Body.InitLocals;
 
             method.DeclaringType.Methods.Add(newMethod);
-            MethodCache.Set(method.Name, newMethod);
+            //MethodCache.Set(method.Name, newMethod);
             return newMethod;
         }
 
         private bool IsSubClassOf(TypeDefinition type, TypeDefinition baseType)
         {
             if (type == null || baseType == null) return false;
-            if (type.GetType() == baseType.GetType()) return true;
+            if (type.FullName == baseType.FullName) return true;
 
             if (type.FullName == typeof(object).FullName)
             {
