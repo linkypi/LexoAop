@@ -2,7 +2,11 @@
 使用 mono.cecil 实现编译时Aop
 - Leox.Aop  使用Aop功能时必须继承里面的基类
 
-- Leox.Injector 注入IL代码的实现，通过在项目属性中切换输出类型来生成dll或者注入工具类exe, Injector.cs中有一个 MethodCache 类已无用，因为缓存是死的，在下次注入时模块的版本guid与上次注入模块的版本guid已不同，所以将旧版本的方法注入到新的模块会报错。
+- Leox.Injector 注入IL代码的实现，通过在项目属性中切换输出类型来生成dll或者注入工具类exe.
+  如果大家觉得IL代码实在难写，那就用一种笨办法，就是首先写好对应的C#代码，
+  编译通过后用ILSpy或者ildasm来查看对应的那部分il代码，然后只要照着里面的来写就OK。
+  Injector.cs中有一个 MethodCache 类已无用，因为缓存是死的，在下次注入时模块的版本guid与上次注入模块的版本guid已不同，
+  所以将旧版本的方法注入到新的模块会报错。
 
 - Leox.BuildTask  自定义一个MSBuild Task，即在使用到的项目的csproj中加入以下内容来实现在指定项目生成后执行该Inject Task，达到注入的功能。
 ``` xml
