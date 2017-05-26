@@ -1,0 +1,16 @@
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\Leox.AopBuildTest.exe.config
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\Leox.AopBuildTest.exe
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\Leox.AopBuildTest.pdb
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\Leox.Aop.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\Leox.Aop.pdb
+D:\projects\Leox\Leox.AopBuildTest\obj\Debug\Leox.AopBuildTest.csprojResolveAssemblyReference.cache
+D:\projects\Leox\Leox.AopBuildTest\obj\Debug\Leox.AopBuildTest.exe
+D:\projects\Leox\Leox.AopBuildTest\obj\Debug\Leox.AopBuildTest.pdb
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Leox.Aop.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Leox.BuildTask.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Leox.Injector.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Leox.Injector.exe
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Mono.Cecil.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Mono.Cecil.Mdb.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Mono.Cecil.Pdb.dll
+D:\projects\Leox\Leox.AopBuildTest\bin\Debug\libs\Mono.Cecil.Rocks.dll

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+  <PropertyGroup>
+    <MyTaskDirectory>$(MSBuildProjectDirectory)\</MyTaskDirectory>
+  </PropertyGroup>
+  <!--UsingTask中的TaskName一定要与Task的类名对应-->
+  <UsingTask TaskName="AopBuildTask" AssemblyFile="$(MyTaskDirectory)Leox.BuildTask.dll" />
+  <!-- <Target Name="BeforeBuild"> -->
+  <!-- </Target> -->
+  <Target Name="AopBuildTask">
+    <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" />
+  </Target>
+  
+  <!-- <PropertyGroup> -->
+    <!-- <TaskLocation Condition="$(TaskLocation)==''">$(MSBuildProjectDirectory)\..\MyBuildTask.dll</TaskLocation>   -->
+  <!-- </PropertyGroup> -->
+
+  <!-- <UsingTask TaskName="MyBuildTask" AssemblyFile="$(TaskLocation)"/> -->
+
+  <!-- <Target Name="Example"> -->
+
+    <!-- <Message Text="Starting example" /> -->
+
+    <!-- <MyBuildTask OutputFile="$(MSBuildProjectFullPath)"> -->
+     <!-- <Output PropertyName="path" TaskParameter="Paths"/> -->
+    <!-- </MyBuildTask> -->
+
+   <!-- <Message Text="path: $(path)" /> --> 
+         
+  <!-- </Target> -->
+  
+  
+</Project>

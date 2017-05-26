@@ -1,0 +1,4 @@
+D:\projects\Leox\Aop\bin\Debug\Leox.Aop.dll
+D:\projects\Leox\Aop\bin\Debug\Leox.Aop.pdb
+D:\projects\Leox\Aop\obj\Debug\Leox.Aop.dll
+D:\projects\Leox\Aop\obj\Debug\Leox.Aop.pdb

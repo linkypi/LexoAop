@@ -1,0 +1,4 @@
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.BuildTask.dll
+D:\projects\Leox\Leox.BuildTask\bin\Debug\Leox.BuildTask.pdb
+D:\projects\Leox\Leox.BuildTask\obj\Debug\Leox.BuildTask.dll
+D:\projects\Leox\Leox.BuildTask\obj\Debug\Leox.BuildTask.pdb
