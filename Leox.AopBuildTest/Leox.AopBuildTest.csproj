@@ -48,7 +48,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Aop\Leox.Aop.csproj">
+    <ProjectReference Include="..\Leox.Aop\Leox.Aop.csproj">
       <Project>{c609973d-1d1a-4641-b414-f59a7aaf9e9b}</Project>
       <Name>Leox.Aop</Name>
     </ProjectReference>
