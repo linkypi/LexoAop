@@ -17,11 +17,34 @@ namespace Leox.AopBuildTest
             //foreach (var item in typeof(AopIncepter).GetMethods()) {
             //    var aa = item.GetCustomAttributes(typeof(AopIncepter), false);
             //}
+            try
+            {
+                Console.WriteLine("return : " + TestIntReturnInTry());
+                Service service = new Service("lynch");
+                service.Say(" say hello.", 120);
+                Console.WriteLine("my build test");
+                Console.ReadKey();
+            }
+            catch (OutOfMemoryException ex)
+            {
+                throw ex;
+            }
+            catch (StackOverflowException sex) {
+                throw;
+            }
+        }
 
-            Service service = new Service("lynch");
-            service.Say(" say hello.",120);
-            Console.WriteLine("my build test");
-            Console.ReadKey();
+        static int TestIntReturnInTry()
+        {
+            int i = 0;
+            try
+            {
+                return i;
+            }
+            finally
+            {
+                i = 2;
+            }
         }
 
         private static Service Test1()
@@ -51,6 +74,11 @@ namespace Leox.AopBuildTest
         public override void OnEnd(MethodAspectArgs args)
         {
             Console.WriteLine("timing end");
+        }
+
+        public override void OnException(MethodAspectArgs args)
+        {
+            Console.WriteLine("exception : " + args.Exception.Message);
         }
     }
     class Log : MethodAspect

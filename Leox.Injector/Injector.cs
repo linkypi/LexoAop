@@ -109,6 +109,8 @@ namespace Leox.Injector
                 var varMethodArgs = new VariableDefinition(module.Import(typeof(MethodAspectArgs)));
                 method.Body.Variables.Add(varMethodArgs);
 
+                var handlerEnd = ilprosor.Create(OpCodes.Nop);
+
                 ilprosor.Append(ilprosor.Create(OpCodes.Nop));
 
                 // MemberInfo method = typeof(Class).GetMethod("TestMethod", new Type[] { typeof(Class1), typeof(Class2), ... });
@@ -123,8 +125,8 @@ namespace Leox.Injector
                 // OnStart()
                 InjectOnStart(method, module, varMethod, varStacks, varMethodArgs);
 
-                // call this.TargetMethod(...)
-                CallTargetMethod(method, ilprosor, newMethod);
+                // try{ call this.TargetMethod(...) } catch(Exception ex){  }
+                TryCallTargetMethod(method, ilprosor, newMethod, handlerEnd, varMethodArgs, varMethod);
 
                 // OnEnd()
                 InjectOnEnd(method, module, varStacks, varMethodArgs);
@@ -135,6 +137,23 @@ namespace Leox.Injector
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public sealed class LeoxDefinition{
+            public MethodDefinition OriginMethod { get; set; }
+            public ModuleDefinition Module
+            {
+                get
+                {
+                    if (OriginMethod != null) return OriginMethod.Module;
+                    return null;
+                }
+            }
+
+            public VariableDefinition VarAttrMethod { get; set; }
+            public VariableDefinition VarAspectArgs { get; set; }
+            public Stack<VariableDefinition> VarStack { get; set; }
+
         }
 
         private void InjectOnEnd(MethodDefinition method, ModuleDefinition module, Stack<VariableDefinition> varStacks, VariableDefinition varMethodArgs)
@@ -250,7 +269,54 @@ namespace Leox.Injector
 
         #endregion
 
-        private void CallTargetMethod(MethodDefinition method, ILProcessor ilprosor,MethodDefinition newMethod)
+        private void TryCallTargetMethod(MethodDefinition method, ILProcessor ilprosor, MethodDefinition newMethod, Instruction handlerEnd, VariableDefinition varMethodArgs, VariableDefinition varMethod)
+        {
+            var varException = new VariableDefinition(method.Module.Import(typeof(Exception)));
+            method.Body.Variables.Add(varException);
+
+            var trySatrt = ilprosor.Create(OpCodes.Nop);
+            var tryEnd = ilprosor.Create(OpCodes.Stloc, varException);
+
+            // try {
+            ilprosor.Append(trySatrt);
+
+            // this.TargetMethod(...);
+            CallTargetMethod(method, ilprosor, newMethod);
+
+            ilprosor.Append(ilprosor.Create(OpCodes.Nop));
+            ilprosor.Append(ilprosor.Create(OpCodes.Leave, handlerEnd));
+
+            // } catch(Exception ex) {
+            ilprosor.Append(tryEnd);
+
+            // methodAspectArgs.Exception = ex;
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varMethodArgs));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varException));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspectArgs).GetMethod("set_Exception", new Type[] { typeof(Exception) }))));
+
+            // attribute.OnException(methodAspectArgs);
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varMethod));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varMethodArgs));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspect).GetMethod("OnException", new Type[] { typeof(MethodAspectArgs) }))));
+            // }
+            // catch块退出，Leave指令必不可少
+            // 若程序没有执行到catch部分则可以正常运行，但是通过ILSpy查看C#代码会报错： 
+            // Basci block has to end with unconditional control flow.
+            ilprosor.Append(ilprosor.Create(OpCodes.Leave, handlerEnd)); 
+            
+            ilprosor.Append(handlerEnd);
+            ilprosor.Append(ilprosor.Create(OpCodes.Nop));
+            method.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Catch)
+            {
+                HandlerEnd = handlerEnd,
+                HandlerStart = tryEnd,
+                TryEnd = tryEnd,
+                TryStart = trySatrt,
+                CatchType = method.Module.Import(typeof(System.Exception))
+            });
+        }
+
+        private void CallTargetMethod(MethodDefinition method, ILProcessor ilprosor, MethodDefinition newMethod)
         {
             Append(ilprosor, new[] 
              { 
@@ -261,8 +327,11 @@ namespace Leox.Injector
 
             Append(ilprosor, new[] 
              { 
-                ilprosor.Create(OpCodes.Call,newMethod),//MethodCache.Get(method.Name)
+                ilprosor.Create(OpCodes.Call,newMethod),
              });
+            if (method.ReturnType != method.Module.Import(typeof(void))) { 
+            
+            }
         }
 
         /// <summary>
