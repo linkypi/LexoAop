@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="IMethodAspect.cs" />
     <Compile Include="MethodAspect.cs" />
+    <Compile Include="MethodAspectArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

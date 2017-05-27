@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace Leox.AopBuildTest
             //}
 
             Service service = new Service("lynch");
-            service.Say(" say hello.");
+            service.Say(" say hello.",120);
             Console.WriteLine("my build test");
             Console.ReadKey();
         }
@@ -36,24 +37,30 @@ namespace Leox.AopBuildTest
     }
     class Timing : MethodAspect
     {
-        public override void OnStart()
+        public override void OnStart(MethodAspectArgs args)
         {
-            Console.WriteLine("timing start");
+            if (args != null && args.Argument != null) {
+                foreach (var item in args.Argument)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+            }
+            Console.WriteLine("timing start" + args != null ? args.Argument[0].ToString() : "");
         }
 
-        public override void OnEnd()
+        public override void OnEnd(MethodAspectArgs args)
         {
             Console.WriteLine("timing end");
         }
     }
     class Log : MethodAspect
     {
-        public override void OnStart()
+        public override void OnStart(MethodAspectArgs args)
         {
             Console.WriteLine("log start");
         }
 
-        public override void OnEnd()
+        public override void OnEnd(MethodAspectArgs args)
         {
             Console.WriteLine("log end");
         }
@@ -93,9 +100,37 @@ namespace Leox.AopBuildTest
             return a + b;
         }
 
+        //[Timing]
+        //public void Say(string words, int age)
+        //{
+        //    MemberInfo method = typeof(Service).GetMethod("Say", new Type[]
+        //    {
+        //        typeof(string),
+        //        typeof(int)
+        //    });
+        //            MethodAspectArgs methodAspectArgs = new MethodAspectArgs();
+        //            methodAspectArgs.Argument = new object[]
+        //    {
+        //        words,
+        //        age
+        //    };
+        //    Timing timing = method.GetCustomAttributes(typeof(Timing), false)[0] as Timing;
+        //    timing.OnStart(methodAspectArgs);
+        //    this._Say_(words, age);
+        //    timing.OnEnd(methodAspectArgs);
+        //}
+
+        // Leox.AopBuildTest.Service
+        //[Timing]
+        //private void _Say_(string words, int age)
+        //{
+        //    Console.WriteLine(this.Name + words);
+        //}
+
+
         [Timing]
-        [Log]
-        public void Say(string words)
+        //[Log]
+        public void Say(string words, int age)
         {
             Console.WriteLine(Name + words);
         }

@@ -99,8 +99,6 @@ namespace Leox.Injector
         {
             try
             {
-                // 首先通过反射获取到每个指定AopAttribute的实例
-                // 然后调用其OnStart方法
                 var module = method.Module;
                 var ilprosor = method.Body.GetILProcessor();
 
@@ -108,21 +106,28 @@ namespace Leox.Injector
 
                 var varMethod = new VariableDefinition(module.Import(typeof(System.Reflection.MemberInfo)));
                 method.Body.Variables.Add(varMethod);
+                var varMethodArgs = new VariableDefinition(module.Import(typeof(MethodAspectArgs)));
+                method.Body.Variables.Add(varMethodArgs);
 
                 ilprosor.Append(ilprosor.Create(OpCodes.Nop));
 
                 // MemberInfo method = typeof(Class).GetMethod("TestMethod", new Type[] { typeof(Class1), typeof(Class2), ... });
                 InjectGetMethod(method, module, varMethod);
 
-                //此处应使用栈结构
+                //init MethodAspectArgs
+                InitMethodAspectArgs(method, module, varMethodArgs);
+
+                //此处应使用栈结构  因为每个方法可能有多个AopAttribute
                 Stack<VariableDefinition> varStacks = new Stack<VariableDefinition>();
 
-                InjectOnStart(method, module, varMethod, varStacks);
+                // OnStart()
+                InjectOnStart(method, module, varMethod, varStacks, varMethodArgs);
 
                 // call this.TargetMethod(...)
                 CallTargetMethod(method, ilprosor, newMethod);
 
-                InjectOnEnd(method, module, varStacks);
+                // OnEnd()
+                InjectOnEnd(method, module, varStacks, varMethodArgs);
 
                 ilprosor.Append(ilprosor.Create(OpCodes.Ret));
             }
@@ -132,7 +137,7 @@ namespace Leox.Injector
             }
         }
 
-        private void InjectOnEnd(MethodDefinition method, ModuleDefinition module, Stack<VariableDefinition> varStacks)
+        private void InjectOnEnd(MethodDefinition method, ModuleDefinition module, Stack<VariableDefinition> varStacks, VariableDefinition varMethodArgs)
         {
             //call attribute.OnEnd();
             ILProcessor ilprosor = method.Body.GetILProcessor();
@@ -141,17 +146,19 @@ namespace Leox.Injector
                 var varAopAttribute = varStacks.Pop();
                 Append(ilprosor, new[] 
                     {  
-                        ilprosor.Create(OpCodes.Ldloc, varAopAttribute ),
-                        ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspect).GetMethod("OnEnd",new Type[]{}))),
+                        ilprosor.Create(OpCodes.Ldloc, varAopAttribute),
+                        ilprosor.Create(OpCodes.Ldloc, varMethodArgs),
+                        ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspect).GetMethod("OnEnd",new Type[]{ typeof(MethodAspectArgs) }))),
                     });
             }
         }
 
-        private void InjectOnStart(MethodDefinition method, ModuleDefinition module, VariableDefinition varMethod, Stack<VariableDefinition> varStacks)
+        private void InjectOnStart(MethodDefinition method, ModuleDefinition module, VariableDefinition varMethod, Stack<VariableDefinition> varStacks, VariableDefinition varMethodArgs)
         {
             //inject attribute.OnStart();
             ILProcessor ilprosor = method.Body.GetILProcessor();
             var attributes = method.CustomAttributes.Where(a => IsSubClassOf(a.AttributeType.Resolve(), method.Module.Import(typeof(MethodAspect)).Resolve()));
+
             foreach (var attr in attributes)
             {
                 var varAopAttribute = new VariableDefinition(attr.AttributeType);
@@ -164,11 +171,84 @@ namespace Leox.Injector
                    {  
                        ilprosor.Create(OpCodes.Nop),  
                        ilprosor.Create(OpCodes.Ldloc, varAopAttribute ),
-                       ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspect).GetMethod("OnStart",new Type[]{}))),
+                        ilprosor.Create(OpCodes.Ldloc, varMethodArgs),
+                       ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspect).GetMethod("OnStart",new Type[]{ typeof(MethodAspectArgs) }))),
                    });
                 varStacks.Push(varAopAttribute);
             }
         }
+
+        #region init MethodAspectArgs
+        
+        /// <summary>
+        /// 初始化 OnStart  OnEnd参数 MethodAspectArgs
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="module"></param>
+        /// <param name="varTypeArr"></param>
+        private void InitMethodAspectArgs(MethodDefinition method, ModuleDefinition module, VariableDefinition varMethodArgs)
+        {
+            var ilprosor = method.Body.GetILProcessor();
+
+            Append(ilprosor, new[] 
+             { 
+                ilprosor.Create(OpCodes.Nop),
+                ilprosor.Create(OpCodes.Newobj,module.Import(typeof(MethodAspectArgs).GetConstructor( new Type[] {} ))), // typeof(object[])
+                ilprosor.Create(OpCodes.Stloc,varMethodArgs),
+                ilprosor.Create(OpCodes.Ldloc,varMethodArgs)
+             });
+
+            InitObjectArr(method, module, ilprosor);
+
+            Append(ilprosor, new[] 
+             { 
+                ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspectArgs).GetMethod("set_Argument",new Type[]{ typeof(Object[]) }))),
+              }
+             );
+        }
+
+        private void InitObjectArr(MethodDefinition method, ModuleDefinition module, ILProcessor ilprosor)
+        {
+            var varArgsArr = new VariableDefinition(module.Import(typeof(Object[])));
+            method.Body.Variables.Add(varArgsArr);
+
+            //新建 Object[] varArgsArr 数组，长度为方法参数的个数
+            Append(ilprosor, new[] 
+             { 
+                ilprosor.Create(OpCodes.Nop),
+                ilprosor.Create(OpCodes.Ldc_I4,method.Parameters.Count),
+                ilprosor.Create(OpCodes.Newarr,module.Import(typeof(System.Object))),
+                ilprosor.Create(OpCodes.Stloc,varArgsArr),
+                ilprosor.Create(OpCodes.Ldloc,varArgsArr)
+              }
+            );
+
+            // 初始化 varArgsArr 数组
+            var index = 0;
+            method.Parameters.ToList().ForEach(p =>
+            {
+                // index 该索引是为匹配 Ldloc_S 指令将数组指定索引下的元素替换为当前返回值
+                // Ldloc_S : Loads the local variable at a specific index onto the evaluation stack, short form.
+                // Stelem_Ref : Replaces the array element at a given index with the object ref value (type O) on the evaluation stack.
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldc_I4,index++ ));
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldarg, p));
+                //判断属性类型是否是值类型  如果是值类型就装箱 引用类型就强转为object
+                if (p.ParameterType.IsValueType)
+                {
+                    ilprosor.Append(ilprosor.Create(OpCodes.Box,p.ParameterType));
+                }
+                else
+                {
+                    ilprosor.Append(ilprosor.Create(OpCodes.Castclass, module.Import(typeof(object))));
+                }
+
+                ilprosor.Append(ilprosor.Create(OpCodes.Stelem_Ref));
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varArgsArr));
+            });
+
+        }
+
+        #endregion
 
         private void CallTargetMethod(MethodDefinition method, ILProcessor ilprosor,MethodDefinition newMethod)
         {
@@ -224,6 +304,8 @@ namespace Leox.Injector
             });
         }
 
+        #region Inject MemberInfo method = typeof(Class).GetMethod("TargetMethod", new Type[] { typeof(Class1), ... });
+        
         /// <summary>
         /// 注入代码  MemberInfo method = typeof(Class).GetMethod("TargetMethod", new Type[] { typeof(Class1), typeof(Class2), ... });
         /// </summary>
@@ -237,10 +319,10 @@ namespace Leox.Injector
             var ilprosor = method.Body.GetILProcessor();
             var varTypeArr = new VariableDefinition(module.Import(typeof(Type[])));
             method.Body.Variables.Add(varTypeArr);
-            //将方法字符串入栈
+            // 注入typeof(Class) 并将方法字符串入栈
             Append(ilprosor, new[] 
              { 
-                ilprosor.Create(OpCodes.Ldtoken,method.DeclaringType),
+                ilprosor.Create(OpCodes.Ldtoken,method.DeclaringType), // typeof(Class)
                 ilprosor.Create(OpCodes.Call,module.Import(typeof(System.Type).GetMethod("GetTypeFromHandle",new Type[]{typeof(System.RuntimeTypeHandle)}))),
                 ilprosor.Create(OpCodes.Ldstr,method.Name),
              });
@@ -293,6 +375,8 @@ namespace Leox.Injector
                  });
             });
         }
+
+        #endregion
 
         private void Append(ILProcessor ilprosor, Instruction[] ins)
         {

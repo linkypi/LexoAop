@@ -12,15 +12,15 @@ namespace Leox.Aop
         public int Order { get; set; }
         public MethodAspect() { }
 
-        public virtual void OnStart()
+        public virtual void OnStart(MethodAspectArgs args)
         {
         }
 
-        public virtual void OnEnd()
+        public virtual void OnEnd(MethodAspectArgs args)
         {
         }
 
-        public virtual void OnException()
+        public virtual void OnException(MethodAspectArgs args)
         {
         }
     }

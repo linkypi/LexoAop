@@ -8,8 +8,8 @@ namespace Leox.Aop
 {
     public interface IMethodAspect
     {
-        void OnStart();
-        void OnEnd();
-        void OnException();
+        void OnStart(MethodAspectArgs args);
+        void OnEnd(MethodAspectArgs args);
+        void OnException(MethodAspectArgs args);
     }
 }
