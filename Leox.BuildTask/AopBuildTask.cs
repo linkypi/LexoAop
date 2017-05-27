@@ -31,6 +31,8 @@ namespace Leox.BuildTask
         {
             try
             {
+                //需要设置目录为libs  否则执行Inject会找不到 Leox.Aop.dll
+                Directory.SetCurrentDirectory(Path.Combine(Directory.GetCurrentDirectory(), "libs"));
                 Log.LogMessage(MessageImportance.High, "build " + outputFile);
                 Paths = outputFile;
                 int index = outputFile.LastIndexOf("\\");
@@ -55,22 +57,21 @@ namespace Leox.BuildTask
 
         private void Build(string projectPath)
         {
-            //将libs中的dll复制到obj/Debug中  否则直接使用Inject执行会找不到 Leox.Aop.dll
-            var objPath = Path.Combine(projectPath, "obj", "Debug");
+            //var objPath = Path.Combine(projectPath, "obj", "Debug");
             var binPath = Path.Combine(projectPath, "bin", "Debug");
-            if (!Directory.Exists(objPath)) Directory.CreateDirectory(objPath);
+            //if (!Directory.Exists(objPath)) Directory.CreateDirectory(objPath);
            
-            DirectoryInfo libsDir = new DirectoryInfo(Path.Combine(projectPath, "libs"));
-            foreach (var item in libsDir.GetFiles())
-            {
-                string filename = Path.Combine(objPath, item.Name);
-                File.Copy(item.FullName, filename, true);
-                Log.LogMessage(MessageImportance.High, string.Format("copy file {0} -> {1}", item.FullName, filename));
-            }
+            //DirectoryInfo libsDir = new DirectoryInfo(Path.Combine(projectPath, "libs"));
+            //foreach (var item in libsDir.GetFiles())
+            //{
+            //    string filename = Path.Combine(objPath, item.Name);
+            //    File.Copy(item.FullName, filename, true);
+            //    Log.LogMessage(MessageImportance.High, string.Format("copy file {0} -> {1}", item.FullName, filename));
+            //}
 
-            DirectoryInfo objDirectory = new DirectoryInfo(objPath);
+            DirectoryInfo binDirectory = new DirectoryInfo(binPath);
             var injector = new Injector.Injector();
-            var files = objDirectory.GetFiles().Where(f => _fileSuffix.Any(s => f.Name.EndsWith(s)
+            var files = binDirectory.GetFiles().Where(f => _fileSuffix.Any(s => f.Name.EndsWith(s)
                 && !f.Name.Contains(".vshost") && !f.Name.Equals("Leox.Injector.exe")));
 
             foreach (var item in files)
@@ -80,7 +81,7 @@ namespace Leox.BuildTask
 
                 if (!injected) { Log.LogMessage(MessageImportance.High, "not found attr ."); continue; }
 
-                File.Copy(item.FullName, Path.Combine(binPath, item.Name), true);
+                //File.Copy(item.FullName, Path.Combine(binPath, item.Name), true);
                 Log.LogMessage(MessageImportance.High, "inject finished .");
             }
         }

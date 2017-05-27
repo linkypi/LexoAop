@@ -30,7 +30,7 @@
  2. 命令行参数输入： BuildSample.proj /fl /flp:v=diag ，BuildSample.proj 必须有
  3. 工作目录填写该项目对应的bin/Debug全路径
 - Leox.AopBuildTest 测试Aop 
-使用的是先继承基类，然后直接以Attribute的方式使用即可
+使用方式是先继承基类，然后直接以Attribute的方式使用即可
 ``` c#
     public class Log : MethodAspect
     {
@@ -56,3 +56,6 @@
         }
     }
   ```
+  这里有个问题是在执行BuildTask任务时，MSBuild会将libs中用到的dll锁定，
+  如果想更新那就得先把MSBuild进程关掉才可以更新，如果觉得这样太麻烦可以设置
+  环境变量MSBUILDDISABLENODEREUSE的值设置为 1 ，这样MSBuild进程就不会长期留在内存中
