@@ -35,20 +35,28 @@ namespace Leox.Injector
             //types = types.Where(a => a.CustomAttributes.Any(b =>
             //IsSubClassOf(b.AttributeType.Resolve(), a.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
             bool injected = false;
-            foreach (var type in types)
+            try
             {
-                var methods = type.Methods.Where(m => !m.IsSpecialName && !m.IsSetter && !m.IsGetter).ToList();
-                methods = methods.Where(m => m.CustomAttributes.Any(b =>
-                          IsSubClassOf(b.AttributeType.Resolve(), m.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
-                foreach (var method in methods)
+                foreach (var type in types)
                 {
-                    if (!methods.Any(m => m.Name == string.Format("_{0}_", method.Name)))
+                    var methods = type.Methods.Where(m => !m.IsSpecialName && !m.IsSetter && !m.IsGetter).ToList();
+                    methods = methods.Where(m => m.CustomAttributes.Any(b =>
+                              IsSubClassOf(b.AttributeType.Resolve(), m.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
+                    foreach (var method in methods)
                     {
-                        InjectMethod(method);
-                        injected = true;
+                        if (!methods.Any(m => m.Name == string.Format("_{0}_", method.Name)))
+                        {
+                            InjectMethod(method);
+                            injected = true;
+                        }
                     }
                 }
             }
+            catch (Exception)
+            {
+                injected = false;
+            }
+           
             return injected;
         }
 
@@ -64,46 +72,43 @@ namespace Leox.Injector
 
         private void OverrideOriginMethod(MethodDefinition method, MethodDefinition newMethod)
         {
-            try
+            var module = method.Module;
+            var ilprosor = method.Body.GetILProcessor();
+
+            //OpCodes 请参考 https://msdn.microsoft.com/zh-cn/library/system.reflection.emit.opcodes_fields(v=vs.110).aspx
+
+            var varMemberInfo = new VariableDefinition(module.Import(typeof(System.Reflection.MemberInfo)));
+            var varAspectArgs = new VariableDefinition(module.Import(typeof(MethodAspectArgs)));
+            method.Body.Variables.Add(varMemberInfo);
+            method.Body.Variables.Add(varAspectArgs);
+            var handlerEnd = ilprosor.Create(OpCodes.Nop);
+
+            InjectorArgs args = new InjectorArgs(method, varMemberInfo, varAspectArgs);
+            args.HandlerEnd = handlerEnd;
+            args.NewMethod = newMethod;
+
+            ilprosor.Append(ilprosor.Create(OpCodes.Nop));
+
+            // MemberInfo method = typeof(Class).GetMethod("TestMethod", new Type[] { typeof(Class1), typeof(Class2), ... });
+            InjectGetMethod(args);
+
+            //init MethodAspectArgs
+            InitMethodAspectArgs(args);
+
+            // OnStart()
+            InjectOnStart(args);
+
+            // try{ call this.TargetMethod(...) } catch(Exception ex){  }
+            TryCallTargetMethod(args);
+
+            // OnEnd()
+            InjectOnEnd(args);
+
+            if (!method.ReturnType.FullName.Equals("System.Void"))
             {
-                var module = method.Module;
-                var ilprosor = method.Body.GetILProcessor();
-
-                //OpCodes 请参考 https://msdn.microsoft.com/zh-cn/library/system.reflection.emit.opcodes_fields(v=vs.110).aspx
-
-                var varMemberInfo = new VariableDefinition(module.Import(typeof(System.Reflection.MemberInfo)));
-                var varAspectArgs = new VariableDefinition(module.Import(typeof(MethodAspectArgs)));
-                method.Body.Variables.Add(varMemberInfo);
-                method.Body.Variables.Add(varAspectArgs);
-                var handlerEnd = ilprosor.Create(OpCodes.Nop);
-
-                InjectorArgs args = new InjectorArgs(method, varMemberInfo, varAspectArgs);
-                args.HandlerEnd = handlerEnd;
-                args.NewMethod = newMethod;
-
-                ilprosor.Append(ilprosor.Create(OpCodes.Nop));
-
-                // MemberInfo method = typeof(Class).GetMethod("TestMethod", new Type[] { typeof(Class1), typeof(Class2), ... });
-                InjectGetMethod(args);
-
-                //init MethodAspectArgs
-                InitMethodAspectArgs(args);
-
-                // OnStart()
-                InjectOnStart(args);
-
-                // try{ call this.TargetMethod(...) } catch(Exception ex){  }
-                TryCallTargetMethod(args);
-
-                // OnEnd()
-                InjectOnEnd(args);
-
-                ilprosor.Append(ilprosor.Create(OpCodes.Ret));
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.ReturnValue));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            ilprosor.Append(ilprosor.Create(OpCodes.Ret));
         }
 
         #region Inject MemberInfo method = typeof(Class).GetMethod("TargetMethod", new Type[] { typeof(Class1), ... });
@@ -381,23 +386,21 @@ namespace Leox.Injector
         {
             var method = args.OriginMethod;
             var ilprosor = method.Body.GetILProcessor();
-            Append(ilprosor, new[] 
-             { 
-                ilprosor.Create(OpCodes.Ldarg_0), //Load this , arg0 指向的是当前对象，之后的参数指向的才是方法的入参
-             });
+
+            //Load this , arg0 指向的是当前对象，之后的参数指向的才是方法的入参
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldarg_0));
 
             method.Parameters.ToList().ForEach(t => { ilprosor.Append(ilprosor.Create(OpCodes.Ldarg_S, t)); });
 
-            Append(ilprosor, new[] 
-             { 
-                ilprosor.Create(OpCodes.Call,args.NewMethod),
-             });
-            if (method.ReturnType != method.Module.Import(typeof(void)))
-            {
+            ilprosor.Append(ilprosor.Create(OpCodes.Call, args.NewMethod));
 
+            if (method.ReturnType.FullName != "System.Void")
+            {
+                args.ReturnValue = new VariableDefinition(method.ReturnType);
+                method.Body.Variables.Add(args.ReturnValue);
+                ilprosor.Append(ilprosor.Create(OpCodes.Stloc, args.ReturnValue));
             }
         }
-
 
         #endregion
 

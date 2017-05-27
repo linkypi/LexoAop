@@ -22,6 +22,7 @@ namespace Leox.AopBuildTest
                 //Console.WriteLine("return : " + TestIntReturnInTry());
                 Service service = new Service("lynch");
                 service.Say(" hello.", 120);
+               // Console.WriteLine(result ? "ok" : "faile");
                 //Console.WriteLine("my build test");
                 Console.ReadKey();
             }
@@ -159,6 +160,7 @@ namespace Leox.AopBuildTest
         public void Say(string words, int age)
         {
             Console.WriteLine(Name + words);
+            //return true;
         }
     }
 }
