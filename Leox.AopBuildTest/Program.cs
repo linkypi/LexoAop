@@ -19,10 +19,10 @@ namespace Leox.AopBuildTest
             //}
             try
             {
-                Console.WriteLine("return : " + TestIntReturnInTry());
+                //Console.WriteLine("return : " + TestIntReturnInTry());
                 Service service = new Service("lynch");
-                service.Say(" say hello.", 120);
-                Console.WriteLine("my build test");
+                service.Say(" hello.", 120);
+                //Console.WriteLine("my build test");
                 Console.ReadKey();
             }
             catch (OutOfMemoryException ex)
@@ -55,8 +55,6 @@ namespace Leox.AopBuildTest
             var result = service.Add(a, b);
             return service;
         }
-
-
     }
     class Timing : MethodAspect
     {
@@ -65,10 +63,10 @@ namespace Leox.AopBuildTest
             if (args != null && args.Argument != null) {
                 foreach (var item in args.Argument)
                 {
-                    Console.WriteLine(item.ToString());
+                    Console.Write(item.ToString() + "  ");
                 }
             }
-            Console.WriteLine("timing start" + args != null ? args.Argument[0].ToString() : "");
+            Console.WriteLine("timing start" + (args != null ? args.Argument[0].ToString() : ""));
         }
 
         public override void OnEnd(MethodAspectArgs args)
