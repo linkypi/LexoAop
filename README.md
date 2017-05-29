@@ -84,7 +84,8 @@
   - 执行copy_method ，执行成功则执行 OnSuccess 方法
   - copy_method 执行出错则捕获异常，异常处理提供三种处理方法，
     一种是只捕获不抛出即 UnThrow ，第二种是抛出这个ex 即ThrowNew，
-	最后一种是 ReThrow 即代码 ``` c# throw ```，保存了完整的异常跟踪链 
+	最后一种是 ReThrow（默认） 即代码 ``` c# throw ```，保存了完整的异常跟踪链 
+	如果有多个AopAttribute指定了ExceptionStrategy属性，则只会以Order最小的那个为准，即排在最前面的为准
 	  异常处理的方式有以下三种
     ``` c#
 	    public enum ExceptionStrategy
