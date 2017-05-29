@@ -10,6 +10,7 @@ namespace Leox.Aop
     {
         void OnStart(MethodAspectArgs args);
         void OnEnd(MethodAspectArgs args);
+        void OnSuccess(MethodAspectArgs args);
         void OnException(MethodAspectArgs args);
     }
 }

@@ -10,6 +10,16 @@ namespace Leox.Aop
     public class MethodAspect : Attribute, IMethodAspect
     {
         public int Order { get; set; }
+
+        private ExceptionStrategy _exceptionStrategy = ExceptionStrategy.ReThrow;
+        public ExceptionStrategy ExceptionStrategy
+        {
+            get { return _exceptionStrategy; }
+            set
+            {
+                _exceptionStrategy = value;
+            }
+        }
         public MethodAspect() { }
 
         public virtual void OnStart(MethodAspectArgs args)
@@ -19,7 +29,9 @@ namespace Leox.Aop
         public virtual void OnEnd(MethodAspectArgs args)
         {
         }
-
+        public virtual void OnSuccess(MethodAspectArgs args)
+        {
+        }
         public virtual void OnException(MethodAspectArgs args)
         {
         }

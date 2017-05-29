@@ -33,7 +33,17 @@ namespace Leox.AopBuildTest
             catch (StackOverflowException sex) {
                 throw;
             }
+            catch (Exception eax)
+            {
+                Console.WriteLine("main exception : " + eax.Message+ "  " + eax.StackTrace);
+
+            }
+
+            Console.ReadKey();
         }
+
+    
+
 
         static int TestIntReturnInTry()
         {
@@ -59,6 +69,10 @@ namespace Leox.AopBuildTest
     }
     class Timing : MethodAspect
     {
+        public override void OnException(MethodAspectArgs args)
+        {
+            Console.WriteLine("timing on exception: " + args.Exception.Message);
+        }
         public override void OnStart(MethodAspectArgs args)
         {
             if (args != null && args.Argument != null) {
@@ -75,13 +89,17 @@ namespace Leox.AopBuildTest
             Console.WriteLine("timing end");
         }
 
-        public override void OnException(MethodAspectArgs args)
+        public override void OnSuccess(MethodAspectArgs args)
         {
-            Console.WriteLine("exception : " + args.Exception.Message);
+            Console.WriteLine("timing success : " + args.ReturnValue.ToString());
         }
     }
     class Log : MethodAspect
     {
+        public override void OnException(MethodAspectArgs args)
+        {
+            Console.WriteLine("log on exception: " + args.Exception.Message);
+        }
         public override void OnStart(MethodAspectArgs args)
         {
             Console.WriteLine("log start");
@@ -91,76 +109,11 @@ namespace Leox.AopBuildTest
         {
             Console.WriteLine("log end");
         }
-    }
-    class Service
-    {
-        public string Name { get; set; }
-        public Service() { }
-        public Service(string name)
+
+        public override void OnSuccess(MethodAspectArgs args)
         {
-            this.Name = name;
-        }
-
-        public int GetNumber()
-        {
-            return 100;
-        }
-
-        public void Test(string words)
-        {
-            var method = typeof(Service).GetMethod("Say", new Type[] { typeof(string) });
-            //AopIncepter incepter = typeof(Service).GetMethod("Say", new Type[] { typeof(string) })
-            //  .GetCustomAttributes(typeof(AopIncepter), false)[0] as AopIncepter;
-            //incepter.OnStart();
-            //this._Say_(words);
-            //incepter.OnEnd();
-        }
-
-        //[AopIncepter]
-        //private void _Say_(string words)
-        //{
-        //    Console.WriteLine(this.Name + words);
-        //}
-
-        public int Add(int a, int b)
-        {
-            return a + b;
-        }
-
-        //[Timing]
-        //public void Say(string words, int age)
-        //{
-        //    MemberInfo method = typeof(Service).GetMethod("Say", new Type[]
-        //    {
-        //        typeof(string),
-        //        typeof(int)
-        //    });
-        //            MethodAspectArgs methodAspectArgs = new MethodAspectArgs();
-        //            methodAspectArgs.Argument = new object[]
-        //    {
-        //        words,
-        //        age
-        //    };
-        //    Timing timing = method.GetCustomAttributes(typeof(Timing), false)[0] as Timing;
-        //    timing.OnStart(methodAspectArgs);
-        //    this._Say_(words, age);
-        //    timing.OnEnd(methodAspectArgs);
-        //}
-
-        // Leox.AopBuildTest.Service
-        //[Timing]
-        //private void _Say_(string words, int age)
-        //{
-        //    Console.WriteLine(this.Name + words);
-        //}
-
-
-        [Timing]
-        //[Log]
-        public void Say(string words, int age)
-        {
-            Console.WriteLine(Name + words);
-            //return true;
+            Console.WriteLine("log success : " + args.ReturnValue.ToString());
         }
     }
+    
 }

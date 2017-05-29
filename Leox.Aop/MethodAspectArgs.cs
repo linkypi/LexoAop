@@ -10,7 +10,7 @@ namespace Leox.Aop
     {
         public object[] Argument { get; set; }
         public Exception Exception { get; set; }
-
+        public Object ReturnValue { get; set; }
         public MethodAspectArgs() { }
         public MethodAspectArgs(Object[] args) {
             this.Argument = args;

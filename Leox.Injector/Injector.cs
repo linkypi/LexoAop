@@ -3,6 +3,7 @@ using Leox.Aop;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -79,30 +80,38 @@ namespace Leox.Injector
 
             var varMemberInfo = new VariableDefinition(module.Import(typeof(System.Reflection.MemberInfo)));
             var varAspectArgs = new VariableDefinition(module.Import(typeof(MethodAspectArgs)));
+      
             method.Body.Variables.Add(varMemberInfo);
             method.Body.Variables.Add(varAspectArgs);
-            var handlerEnd = ilprosor.Create(OpCodes.Nop);
 
+            var handlerEnd = ilprosor.Create(OpCodes.Nop);
             InjectorArgs args = new InjectorArgs(method, varMemberInfo, varAspectArgs);
             args.HandlerEnd = handlerEnd;
             args.NewMethod = newMethod;
-
+      
             ilprosor.Append(ilprosor.Create(OpCodes.Nop));
 
             // MemberInfo method = typeof(Class).GetMethod("TestMethod", new Type[] { typeof(Class1), typeof(Class2), ... });
             InjectGetMethod(args);
 
             //init MethodAspectArgs
+            //MethodAspectArgs methodAspectArgs = new MethodAspectArgs();
+            //methodAspectArgs.Argument = new object[]{ ... }
             InitMethodAspectArgs(args);
 
+            //MAList list = new MAList();
+            //TestAOPAttribute attribute = method.GetCustomAttributes(typeof(TestAOPAttribute), false)[0];
+            //list.Add(attribute);
+            InjectGetAopAttrList(args);
+
             // OnStart()
-            InjectOnStart(args);
+            InjectMethodOnEvent(args, "OnStart");
 
             // try{ call this.TargetMethod(...) } catch(Exception ex){  }
             TryCallTargetMethod(args);
 
             // OnEnd()
-            InjectOnEnd(args);
+            InjectMethodOnEvent(args,"OnEnd");
 
             if (!method.ReturnType.FullName.Equals("System.Void"))
             {
@@ -173,7 +182,7 @@ namespace Leox.Injector
             {
                 Append(ilprosor, new[] 
                  { 
-                     // index 该索引是为匹配 Ldloc_S 指令将数组指定索引下的元素替换为当前返回值
+                     // index 该索引是为匹配 Stelem_Ref 指令将数组指定索引下的元素替换为当前返回值
                      // Ldloc_S : Loads the local variable at a specific index onto the evaluation stack, short form.
                      // Stelem_Ref : Replaces the array element at a given index with the object ref value (type O) on the evaluation stack.
                      ilprosor.Create(OpCodes.Ldc_I4,index++ ),         
@@ -197,7 +206,7 @@ namespace Leox.Injector
         /// <param name="varTypeArr"></param>
         private void InitMethodAspectArgs(InjectorArgs args)
         {
-            var ilprosor = args.OriginMethod.Body.GetILProcessor();
+            var ilprosor = args.ILProcessor;
             var module = args.Module;
             Append(ilprosor, new[] 
              { 
@@ -246,10 +255,10 @@ namespace Leox.Injector
                 {
                     ilprosor.Append(ilprosor.Create(OpCodes.Box, p.ParameterType));
                 }
-                else
-                {
-                    ilprosor.Append(ilprosor.Create(OpCodes.Castclass, module.Import(typeof(object))));
-                }
+                //else
+                //{
+                //    ilprosor.Append(ilprosor.Create(OpCodes.Castclass, module.Import(typeof(object))));
+                //}
 
                 ilprosor.Append(ilprosor.Create(OpCodes.Stelem_Ref));
                 ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varArgsArr));
@@ -259,31 +268,41 @@ namespace Leox.Injector
 
         #endregion
 
-        #region Inject OnStart
-        
-        private void InjectOnStart(InjectorArgs args)
+        #region Get AopAttribute list
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        private void InjectGetAopAttrList(InjectorArgs args)
         {
             //inject attribute.OnStart();
             var method = args.OriginMethod;
-            ILProcessor ilprosor = method.Body.GetILProcessor();
+            var ilprosor = args.ILProcessor;
             var attributes = method.CustomAttributes.Where(a => IsSubClassOf(a.AttributeType.Resolve(), method.Module.Import(typeof(MethodAspect)).Resolve()));
+            
+            // 初始化 MAList attrList 用于存放attrite实例，在添加元素时就已经将元素按Order升序排序，
+            // 如果使用IL实现排序就比较繁杂
+            var varAttrList = new VariableDefinition(method.Module.Import(typeof(MAList)));
+            method.Body.Variables.Add(varAttrList);
+            ilprosor.Append(ilprosor.Create(OpCodes.Newobj, args.Module.Import(typeof(MAList).GetConstructor(new Type[] { }))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Stloc, varAttrList));
+            args.VarAttrList = varAttrList;
 
             foreach (var attr in attributes)
             {
-                var varAopAttribute = new VariableDefinition(attr.AttributeType);
-                method.Body.Variables.Add(varAopAttribute);
-                //TestAOPAttribute attribute = method.GetCustomAttributes(typeof(TestAOPAttribute), false)[0];
-                GetAopAtrribute(args, attr, varAopAttribute);
+                //var varAopAttribute = new VariableDefinition(attr.AttributeType);
+                var varAttribute = new VariableDefinition(args.Module.Import(attr.AttributeType));
+                method.Body.Variables.Add(varAttribute);
 
-                //call attribute.OnStart();
-                Append(ilprosor, new[] 
-                   {  
-                       ilprosor.Create(OpCodes.Nop),  
-                       ilprosor.Create(OpCodes.Ldloc, varAopAttribute ),
-                        ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs),
-                       ilprosor.Create(OpCodes.Callvirt,method.Module.Import(typeof(MethodAspect).GetMethod("OnStart",new Type[]{ typeof(MethodAspectArgs) }))),
-                   });
-                args.Attributes.Add(varAopAttribute);
+                //TestAOPAttribute attribute = method.GetCustomAttributes(typeof(TestAOPAttribute), false)[0];
+                GetAopAtrribute(args, attr, varAttribute);
+
+                //attrList.Add(attr);
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAttrList));
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varAttribute));
+                ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MAList).
+                    GetMethod("Add", new Type[] { typeof(MethodAspect) }))));
             }
         }
 
@@ -317,7 +336,7 @@ namespace Leox.Injector
                  //1. An object reference is pushed onto the stack.
                  //2. The object reference is popped from the stack and tested to see if it is an instance of the class passed in class.
                  //3. The result (either an object reference or a null reference) is pushed onto the stack.
-                 ilprosor.Create(OpCodes.Isinst,cusAttr.AttributeType),
+                 ilprosor.Create(OpCodes.Isinst,module.Import(cusAttr.AttributeType)), //cusAttr.AttributeType
                  //ilprosor.Create(OpCodes.Ldc_I4,index),
                  ilprosor.Create(OpCodes.Stloc,varAopAttribute),
                  ilprosor.Create(OpCodes.Nop),
@@ -335,51 +354,98 @@ namespace Leox.Injector
 
             var varException = new VariableDefinition(method.Module.Import(typeof(Exception)));
             method.Body.Variables.Add(varException);
+            args.VarException = varException;
 
-            var trySatrt = ilprosor.Create(OpCodes.Nop);
+            var tryStart = ilprosor.Create(OpCodes.Nop);
             var tryEnd = ilprosor.Create(OpCodes.Stloc, varException);
 
             // try {
-            ilprosor.Append(trySatrt);
+            ilprosor.Append(tryStart);
 
             // this.TargetMethod(...);
             CallTargetMethod(args);
 
+            InjectMethodOnEvent(args, "OnSuccess");
+
             ilprosor.Append(ilprosor.Create(OpCodes.Nop));
             ilprosor.Append(ilprosor.Create(OpCodes.Leave, args.HandlerEnd));
 
-            // } catch(Exception ex) {
-            ilprosor.Append(tryEnd);
-
-            // methodAspectArgs.Exception = ex;
-            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs));
-            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, varException));
-            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspectArgs).GetMethod("set_Exception", new Type[] { typeof(Exception) }))));
-
-            // attribute1.OnException(methodAspectArgs);
-            // attribute2.OnException(methodAspectArgs); ...
-            for (int index = args.Attributes.Count - 1; index >= 0; index--)
-            {
-                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.Attributes[index]));
-                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs));
-                ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspect).GetMethod("OnException", new Type[] { typeof(MethodAspectArgs) }))));
-            }
-            // }
-            // catch块退出，Leave指令必不可少
-            // 若程序没有执行到catch部分则可以正常运行，但是通过ILSpy查看C#代码会报错： 
-            // Basci block has to end with unconditional control flow.
-            ilprosor.Append(ilprosor.Create(OpCodes.Leave, args.HandlerEnd));
+            // } catch(Exception ex) { ... }
+            InjectCatchBlock(args, tryEnd);
 
             ilprosor.Append(args.HandlerEnd);
             ilprosor.Append(ilprosor.Create(OpCodes.Nop));
+            // HandlerStart HandlerEnd 表示ExceptionHandlerType处理的开始及结束位置
             method.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Catch)
             {
                 HandlerEnd = args.HandlerEnd,
                 HandlerStart = tryEnd,
                 TryEnd = tryEnd,
-                TryStart = trySatrt,
+                TryStart = tryStart,
                 CatchType = method.Module.Import(typeof(System.Exception))
             });
+        }
+
+        /// <summary>
+        /// catch(Exception ex){  .... }
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="tryEnd"></param>
+        private void InjectCatchBlock(InjectorArgs args,Instruction tryEnd)
+        {
+            var method = args.OriginMethod;
+            var ilprosor = method.Body.GetILProcessor();
+            ilprosor.Append(tryEnd);
+
+            // methodAspectArgs.Exception = ex;
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarException));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspectArgs)
+                .GetMethod("set_Exception", new Type[] { typeof(Exception) }))));
+
+            InjectMethodOnEvent(args, "OnException");
+    
+            // swith(exceptionStrategy){  case unthrow: break; ... }
+            InjectExceptionStrategy(args);
+            // catch块退出，Leave指令必不可少
+            // 若程序没有执行到catch部分则可以正常运行，但是通过ILSpy查看C#代码会报错： 
+            // Basci block has to end with unconditional control flow.
+            ilprosor.Append(ilprosor.Create(OpCodes.Leave, args.HandlerEnd));
+        }
+
+        /// <summary>
+        /// swith(exceptionStrategy){  case unthrow: break; ... }
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="method"></param>
+        /// <param name="ilprosor"></param>
+        private  void InjectExceptionStrategy(InjectorArgs args)
+        {
+            var method = args.OriginMethod;
+            var ilprosor = args.ILProcessor;
+
+            var breakSwitch = ilprosor.Create(OpCodes.Nop);
+            //var caseUnThrow = ilprosor.Create(OpCodes.Nop);
+            var caseUnThrow = ilprosor.Create(OpCodes.Br, breakSwitch);
+            var caseReThrow = ilprosor.Create(OpCodes.Rethrow);
+            var caseThrowNew = ilprosor.Create(OpCodes.Ldloc_S, args.VarException);
+
+            //如果有多个AopAttibute 那只取attributes中Order排在第一的 ExceptionStrategy
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAttrList));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldc_I4_0));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldelem_Ref));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspect)
+                  .GetMethod("get_ExceptionStrategy", new Type[] { }))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Castclass, method.Module.Import(typeof(Int32))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Switch, new[] { caseUnThrow, caseThrowNew, caseReThrow, }));
+
+            //注意这里需要执行两条 无条件跳转指令 Br
+            ilprosor.Append(ilprosor.Create(OpCodes.Br, breakSwitch));
+            ilprosor.Append(caseUnThrow);
+            ilprosor.Append(caseThrowNew);
+            ilprosor.Append(ilprosor.Create(OpCodes.Throw));
+            ilprosor.Append(caseReThrow);
+            ilprosor.Append(breakSwitch);
         }
 
         private void CallTargetMethod(InjectorArgs args)
@@ -399,22 +465,132 @@ namespace Leox.Injector
                 args.ReturnValue = new VariableDefinition(method.ReturnType);
                 method.Body.Variables.Add(args.ReturnValue);
                 ilprosor.Append(ilprosor.Create(OpCodes.Stloc, args.ReturnValue));
+
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs));
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.ReturnValue));
+                
+                //设置返回值
+                //判断返回类型类型是否是值类型  如果是值类型就装箱 引用类型就强转为object
+                if (method.ReturnType.IsValueType)
+                {
+                    ilprosor.Append(ilprosor.Create(OpCodes.Box, method.ReturnType));
+                }
+                else
+                {
+                    ilprosor.Append(ilprosor.Create(OpCodes.Castclass, args.Module.Import(typeof(Object))));
+                }
+                ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspectArgs)
+                                      .GetMethod("set_ReturnValue", new Type[] { typeof(Object) }))));
             }
         }
 
         #endregion
 
-        private void InjectOnEnd(InjectorArgs args)
-        {
-            var method = args.OriginMethod;
-            //call attribute.OnEnd();
-            var ilprosor = method.Body.GetILProcessor();
-            for (int index = args.Attributes.Count - 1; index >= 0; index--)
+        private void InjectMethodOnEvent(InjectorArgs args,string eventName){
+
+            var ilprosor = args.ILProcessor;
+             InjectForeach<MethodAspect>(args,args.VarAttrList, (current) =>
             {
-                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.Attributes[index]));
-                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs));
-                ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspect).GetMethod("OnEnd", new Type[] { typeof(MethodAspectArgs) }))));
+                Append(ilprosor, new[] 
+                   {  
+                       ilprosor.Create(OpCodes.Nop),  
+                       ilprosor.Create(OpCodes.Ldloc, current ),
+                       ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs),
+                       ilprosor.Create(OpCodes.Callvirt, args.Module.Import(typeof(MethodAspect).
+                       GetMethod(eventName,new Type[]{ typeof(MethodAspectArgs) }))),
+                   });
+            });
+        }
+
+        /// <summary>
+        /// 用于记录在使用foreach时是否已声明用到的 current 变量，暂时没有考虑函数作用域的问题
+        /// </summary>
+        private Dictionary<Type, bool> _foreachItemDic = new Dictionary<Type, bool>();
+        private void InjectForeach<T>(InjectorArgs args, VariableDefinition list, Action<VariableDefinition> action)
+        {
+            MethodDefinition method = args.OriginMethod;
+            ILProcessor ilprosor = args.ILProcessor;
+
+            // 初始化变量
+            if (!_foreachItemDic.ContainsKey(typeof(IEnumerator<T>)))
+            {
+                args.VarEnumerator = new VariableDefinition(method.Module.Import(typeof(IEnumerator<T>)));
+                method.Body.Variables.Add(args.VarEnumerator);
+                _foreachItemDic.Add(typeof(IEnumerator<T>), true);
             }
+            if (args.VarHasNext == null)
+            {
+                args.VarHasNext = new VariableDefinition(method.Module.Import(typeof(bool)));
+                method.Body.Variables.Add(args.VarHasNext);
+            }
+            if (!_foreachItemDic.ContainsKey(typeof(T)))
+            {
+                args.VarItem = new VariableDefinition(method.Module.Import(typeof(T)));
+                method.Body.Variables.Add(args.VarItem);
+
+                _foreachItemDic.Add(typeof(T), true);
+            }
+            
+            var tryStart = ilprosor.Create(OpCodes.Nop);
+            var handlerEnd = ilprosor.Create(OpCodes.Nop);
+            var tryEnd = ilprosor.Create(OpCodes.Nop);
+            //var tryEnd = ilprosor.Create(OpCodes.Leave, handlerEnd);
+            var finallyStart = ilprosor.Create(OpCodes.Nop);
+            var finallyEnd = ilprosor.Create(OpCodes.Endfinally);
+
+            //  list.GetEnumerator()
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, list));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MAList).GetMethod("GetEnumerator", new Type[] { }))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Stloc, args.VarEnumerator));
+            // 注意顺序 只有获取到VarEnumerator才可以初始化以下指令
+            var loopStart = ilprosor.Create(OpCodes.Ldloc, args.VarEnumerator);
+            var moveNextStart = ilprosor.Create(OpCodes.Ldloc, args.VarEnumerator);
+
+            // try{  while(list.MoveNext()){  var item = list.get_Current();  action(item);   }   }
+            ilprosor.Append(tryStart);
+            ilprosor.Append(ilprosor.Create(OpCodes.Br, moveNextStart));
+            ilprosor.Append(loopStart);
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(IEnumerator<T>).GetMethod("get_Current", new Type[] { }))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Stloc, args.VarItem));
+
+            if (action != null) action(args.VarItem);
+           
+            ilprosor.Append(moveNextStart);
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(IEnumerator).GetMethod("MoveNext", new Type[] { }))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Stloc, args.VarHasNext));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarHasNext));
+            ilprosor.Append(ilprosor.Create(OpCodes.Brtrue, loopStart));
+            ilprosor.Append(ilprosor.Create(OpCodes.Leave, handlerEnd));
+          
+            //
+            // finally{  
+            //  if( VarEnumerator!=null )
+            //  { VarEnumerator.Dispose(); }
+            // }  
+            ilprosor.Append(finallyStart);
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarEnumerator));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldnull));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ceq));
+            ilprosor.Append(ilprosor.Create(OpCodes.Stloc_S, args.VarHasNext));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc_S, args.VarHasNext));
+            ilprosor.Append(ilprosor.Create(OpCodes.Brtrue_S, handlerEnd));
+            ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarEnumerator));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(System.IDisposable).GetMethod("Dispose", new Type[] { }))));
+            ilprosor.Append(ilprosor.Create(OpCodes.Nop));
+            ilprosor.Append(finallyEnd);
+            ilprosor.Append(handlerEnd);
+
+            //ilprosor.Append(end);
+            ilprosor.Append(ilprosor.Create(OpCodes.Nop));
+            // HandlerStart HandlerEnd 表示ExceptionHandlerType处理的开始及结束位置
+            method.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Finally)
+            {
+                HandlerEnd = handlerEnd,
+                HandlerStart = finallyStart,
+                TryEnd = finallyStart,
+                TryStart = tryStart
+            });
+
         }
 
         private void Append(ILProcessor ilprosor, Instruction[] ins)

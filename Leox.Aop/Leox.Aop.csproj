@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MAList.cs" />
+    <Compile Include="ExceptionStrategy.cs" />
     <Compile Include="IMethodAspect.cs" />
     <Compile Include="MethodAspect.cs" />
     <Compile Include="MethodAspectArgs.cs" />
