@@ -1,8 +1,8 @@
 # LexoAop
 
 此项目是使用 mono.cecil 实现的编译时Aop。
-1. 使用方式是先继承基类 MethodAspect(MethodAspect 继承于 Attribute )，
-   然后直接以Attribute的方式使用即可
+#####1. 使用方式
+  &emsp; &emsp;先继承基类 MethodAspect(MethodAspect 继承于 Attribute )，然后直接以Attribute的方式使用即可
 ``` c#
     class Program
     {
@@ -72,13 +72,12 @@
 				Console.WriteLine("log success, return value : " + args.ReturnValue.ToString()); 
         }
     }
-  
-  ```
+```
 
-2. Leox.Aop , Aop基类，如方法拦截基类 MethodAspect，异常处理策略 ExceptionStrategy
+##### 2. Leox.Aop , Aop基类，如方法拦截基类 MethodAspect，异常处理策略 ExceptionStrategy
 
-3. Leox.Injector 注入IL代码的实现，通过在项目属性中切换输出类型来生成dll或者注入工具类exe.
-  目前实现的是方法级别的拦截，基本思路:
+#####3. Leox.Injector 注入IL代码的实现，
+  &emsp; &emsp;通过在项目属性中切换输出类型来生成dll或者注入工具类exe.目前实现的是方法级别的拦截，基本思路:
   - 加载程序集，找到标记有MethodAspect Attribute的方法
   - 复制该方法并生成一个新的方法copy_method，复制完成后清楚原有方法
   - 改写原有方法，首先调用AopAttribute的Start方法
@@ -104,9 +103,9 @@
   - 以上处理完成最后调用AopAttribute的OnEnd方法
   
   对用值类型转引用类型时记得装箱Box.
-  如果大家觉得IL代码实在难写，那就用一种笨办法，就是首先写好对应的C#代码，
+  如果大家觉得IL代码实在难写，那就用一种笨办法，就是首先写好对应的C#代码，
   编译通过后用ILSpy或者ildasm来查看对应的那部分il代码，然后只要照着里面的来写就OK。
-  Injector.cs中有一个 MethodCache 类已无用，因为缓存是死的，在下次注入时模块的版本
+  Injector.cs中有一个 MethodCache 类已无用，因为缓存是死的，在下次注入时模块的版本
   guid与上次注入模块的版本guid已不同，所以将旧版本的方法注入到新的模块会报错。
   
   注入后的代码大概长这样：
@@ -168,7 +167,9 @@
 	}
    ```
 
-4. Leox.BuildTask  自定义一个MSBuild Task，即在使用到的项目的csproj中加入以下内容来实现在指定项目生成后执行该Inject Task，达到注入的功能。
+##### 4. Leox.BuildTask 
+&emsp; &emsp; 自定义一个MSBuild Task，即在使用到的项目的csproj中加入以下内容来实现在指定项目
+生成后执行该Inject Task，达到注入的目的。
 ``` xml
   <PropertyGroup>
   <MyTaskDirectory>libs\</MyTaskDirectory>
@@ -186,17 +187,20 @@
 ```
  若要调试BuidTask项目请在 项目属性-> 调试 做以下配置
  1. 启动操作 -> 选中启动外部程序，输入 C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe ，
-   注意区分32、64位的Framework，如果填错则会报错无法调试
+   注意区分32、64位的Framework，如果填错则会报错无法调试
  2. 命令行参数输入： BuildSample.proj /fl /flp:v=diag ，BuildSample.proj 必须有
  3. 工作目录填写该项目对应的bin/Debug全路径
  
-5. Leox.AopBuildTest 测试Aop 
-
-  这里有个问题是在执行BuildTask任务时，MSBuild会将libs中用到的dll锁定，
+#####5. Leox.AopBuildTest 
+&emsp; &emsp;引用BuildTask 项目测试Aop 项目，这里有个问题是在执行BuildTask任务时，MSBuild会将libs中用到的dll锁定，
   如果想更新那就得先把MSBuild进程关掉才可以更新，如果觉得这样太麻烦可以设置
   环境变量MSBUILDDISABLENODEREUSE的值设置为 1 ，这样MSBuild进程就不会长期留在内存中
   
-6. 遗留问题: 程序集被注入后无法使用VS来调试，如果哪位朋友知道的话麻烦告诉我一声，不胜感激！
+#####6. 遗留问题:
+&emsp; &emsp;程序集被注入后无法使用VS来调试，如果哪位朋友知道的话麻烦告诉我一声，不胜感激！
+个人博客:  [http://blog.magicleox.com/](http://blog.magicleox.com/)
+
+
 
 
 
