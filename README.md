@@ -1,7 +1,7 @@
 # LexoAop
 
 此项目是使用 mono.cecil 实现的编译时Aop。
-#####1. 使用方式
+##### 1. 使用方式
   &emsp; &emsp;先继承基类 MethodAspect(MethodAspect 继承于 Attribute )，然后直接以Attribute的方式使用即可
 ``` c#
     class Program
@@ -76,7 +76,7 @@
 
 ##### 2. Leox.Aop , Aop基类，如方法拦截基类 MethodAspect，异常处理策略 ExceptionStrategy
 
-#####3. Leox.Injector 注入IL代码的实现，
+##### 3. Leox.Injector 注入IL代码的实现，
   &emsp; &emsp;通过在项目属性中切换输出类型来生成dll或者注入工具类exe.目前实现的是方法级别的拦截，基本思路:
   - 加载程序集，找到标记有MethodAspect Attribute的方法
   - 复制该方法并生成一个新的方法copy_method，复制完成后清楚原有方法
@@ -197,8 +197,9 @@
   环境变量MSBUILDDISABLENODEREUSE的值设置为 1 ，这样MSBuild进程就不会长期留在内存中
   
 ##### 6. 遗留问题:
-&emsp; &emsp;程序集被注入后无法使用VS来调试，如果哪位朋友知道的话麻烦告诉我一声，不胜感激！
-&emsp; &emsp;个人博客:  [http://blog.magicleox.com/](http://blog.magicleox.com/)
+&emsp; &emsp; 程序集被注入后无法使用VS来调试，如果哪位朋友知道的话麻烦告诉我一声，不胜感激！
+
+&emsp; &emsp; 个人博客:  [http://blog.magicleox.com/](http://blog.magicleox.com/)
 
 
 
