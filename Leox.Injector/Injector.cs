@@ -13,16 +13,26 @@ namespace Leox.Injector
 {
     public class Injector
     {
-        public bool Inject(string path)
+        public bool Inject(string path, out Exception exception)
         {
-            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(path);
             bool injected = false;
-
-            foreach (var module in assembly.Modules)
+            exception = null;
+            try
             {
-                injected = injected || CheckModule(module);
+                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(path);
+
+                foreach (var module in assembly.Modules)
+                {
+                    injected = injected || CheckModule(module);
+                }
+                assembly.Write(path);
             }
-            assembly.Write(path);
+            catch (Exception ex)
+            {
+                injected = false;
+                exception = ex;
+            }
+           
             return injected;
         }
 
@@ -36,28 +46,22 @@ namespace Leox.Injector
             //types = types.Where(a => a.CustomAttributes.Any(b =>
             //IsSubClassOf(b.AttributeType.Resolve(), a.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
             bool injected = false;
-            try
+
+            foreach (var type in types)
             {
-                foreach (var type in types)
+                var methods = type.Methods.Where(m => !m.IsSpecialName && !m.IsSetter && !m.IsGetter).ToList();
+                methods = methods.Where(m => m.CustomAttributes.Any(b =>
+                          IsSubClassOf(b.AttributeType.Resolve(), m.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
+                foreach (var method in methods)
                 {
-                    var methods = type.Methods.Where(m => !m.IsSpecialName && !m.IsSetter && !m.IsGetter).ToList();
-                    methods = methods.Where(m => m.CustomAttributes.Any(b =>
-                              IsSubClassOf(b.AttributeType.Resolve(), m.Module.Import(typeof(MethodAspect)).Resolve()))).ToList();
-                    foreach (var method in methods)
+                    if (!methods.Any(m => m.Name == string.Format("_{0}_", method.Name)))
                     {
-                        if (!methods.Any(m => m.Name == string.Format("_{0}_", method.Name)))
-                        {
-                            InjectMethod(method);
-                            injected = true;
-                        }
+                        InjectMethod(method);
+                        injected = true;
                     }
                 }
             }
-            catch (Exception)
-            {
-                injected = false;
-            }
-           
+
             return injected;
         }
 

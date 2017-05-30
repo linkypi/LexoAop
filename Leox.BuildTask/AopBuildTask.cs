@@ -31,7 +31,7 @@ namespace Leox.BuildTask
         {
             try
             {
-                //需要设置目录为libs  否则执行Inject会找不到 Leox.Aop.dll
+                //需要设置当前目录为libs  否则执行Inject会找不到 Leox.Aop.dll
                 Directory.SetCurrentDirectory(Path.Combine(Directory.GetCurrentDirectory(), "libs"));
                 Log.LogMessage(MessageImportance.High, "build " + outputFile);
                 Paths = outputFile;
@@ -74,12 +74,23 @@ namespace Leox.BuildTask
             var files = binDirectory.GetFiles().Where(f => _fileSuffix.Any(s => f.Name.EndsWith(s)
                 && !f.Name.Contains(".vshost") && !f.Name.Equals("Leox.Injector.exe")));
 
+            Exception ex = null;
             foreach (var item in files)
             {
                 Log.LogMessage(MessageImportance.High, "find attr from " + item.FullName);
-                var injected = injector.Inject(item.FullName);
+                var injected = injector.Inject(item.FullName,out ex);
 
-                if (!injected) { Log.LogMessage(MessageImportance.High, "not found attr ."); continue; }
+                if (!injected) {
+                    if (ex != null)
+                    {
+                        Log.LogMessage(MessageImportance.High, "injected faild ." + ex.Message);
+                    }
+                    else
+                    {
+                        Log.LogMessage(MessageImportance.High, "unfound attr .");
+                    }
+                    continue; 
+                }
 
                 //File.Copy(item.FullName, Path.Combine(binPath, item.Name), true);
                 Log.LogMessage(MessageImportance.High, "inject finished .");

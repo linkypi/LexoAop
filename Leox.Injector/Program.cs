@@ -13,7 +13,9 @@ namespace Leox.Injector
             string path = @"E:\Projects\LexoAop\Leox.AopBuildTest\obj\Debug\Leox.AopBuildTest.exe";
             if (args != null && args.Length > 0)
                 path = args[0];
-            new Injector().Inject(path);
+
+            Exception ex = null;
+            new Injector().Inject(path,out ex);
         }
     }
 }
