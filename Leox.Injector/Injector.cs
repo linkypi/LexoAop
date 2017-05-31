@@ -460,8 +460,11 @@ namespace Leox.Injector
             var method = args.OriginMethod;
             var ilprosor = method.Body.GetILProcessor();
 
-            //Load this , arg0 指向的是当前对象，之后的参数指向的才是方法的入参
-            ilprosor.Append(ilprosor.Create(OpCodes.Ldarg_0));
+            if (!args.OriginMethod.IsStatic)
+            {
+                //Load this , arg0 指向的是当前对象，之后的参数指向的才是方法的入参
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldarg_0));
+            }
 
             method.Parameters.ToList().ForEach(t => { ilprosor.Append(ilprosor.Create(OpCodes.Ldarg_S, t)); });
 
@@ -519,23 +522,24 @@ namespace Leox.Injector
             ILProcessor ilprosor = args.ILProcessor;
 
             // 初始化变量
-            if (!_foreachItemDic.ContainsKey(typeof(IEnumerator<T>)))
+            if (!_foreachItemDic.ContainsKey(typeof(IEnumerator<T>)) || args.VarEnumerator == null)
             {
                 args.VarEnumerator = new VariableDefinition(method.Module.Import(typeof(IEnumerator<T>)));
                 method.Body.Variables.Add(args.VarEnumerator);
-                _foreachItemDic.Add(typeof(IEnumerator<T>), true);
+                if (!_foreachItemDic.ContainsKey(typeof(IEnumerator<T>)))
+                    _foreachItemDic.Add(typeof(IEnumerator<T>), true);
             }
             if (args.VarHasNext == null)
             {
                 args.VarHasNext = new VariableDefinition(method.Module.Import(typeof(bool)));
                 method.Body.Variables.Add(args.VarHasNext);
             }
-            if (!_foreachItemDic.ContainsKey(typeof(T)))
+            if (!_foreachItemDic.ContainsKey(typeof(T)) || args.VarItem == null)
             {
                 args.VarItem = new VariableDefinition(method.Module.Import(typeof(T)));
                 method.Body.Variables.Add(args.VarItem);
-
-                _foreachItemDic.Add(typeof(T), true);
+                if (!_foreachItemDic.ContainsKey(typeof(T)))
+                    _foreachItemDic.Add(typeof(T), true);
             }
             
             var tryStart = ilprosor.Create(OpCodes.Nop);

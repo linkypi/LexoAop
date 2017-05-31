@@ -19,9 +19,12 @@ namespace Leox.AopBuildTest
             //}
             try
             {
+                MemberInfo method = typeof(Program).GetMethod("Apply", new Type[]{ });
+
+                Apply();
                 //Console.WriteLine("return : " + TestIntReturnInTry());
-                Service service = new Service("lynch");
-                service.Say(" hello.", 120);
+                //Service service = new Service("lynch");
+                //service.Say(" hello.", 120);
                // Console.WriteLine(result ? "ok" : "faile");
                 //Console.WriteLine("my build test");
                 Console.ReadKey();
@@ -42,7 +45,55 @@ namespace Leox.AopBuildTest
             Console.ReadKey();
         }
 
-    
+        [Timing]
+        public static void Apply() {
+            Console.WriteLine("test 2.");
+        }
+
+        // Leox.AopBuildTest.Program
+        //[Timing]
+        public static void Apply12()
+        {
+            Type arg_22_0 = typeof(Program);
+            string arg_22_1 = "Apply";
+            Type[] types = new Type[0];
+            MemberInfo method = arg_22_0.GetMethod(arg_22_1, types);
+            MethodAspectArgs methodAspectArgs = new MethodAspectArgs();
+            MAList mAList = new MAList();
+            Timing item = method.GetCustomAttributes(typeof(Timing), false)[0] as Timing;
+            mAList.Add(item);
+            foreach (MethodAspect current in mAList)
+            {
+                current.OnStart(methodAspectArgs);
+            }
+            try
+            {
+                //Program._Apply_();
+                foreach (MethodAspect current in mAList)
+                {
+                    current.OnSuccess(methodAspectArgs);
+                }
+            }
+            catch (Exception ex)
+            {
+                methodAspectArgs.Exception = ex;
+                foreach (MethodAspect current in mAList)
+                {
+                    current.OnException(methodAspectArgs);
+                }
+                switch ((int)mAList[0].ExceptionStrategy)
+                {
+                    case 1:
+                        throw ex;
+                    case 2:
+                        throw;
+                }
+            }
+            foreach (MethodAspect current in mAList)
+            {
+                current.OnEnd(methodAspectArgs);
+            }
+        }
 
 
         static int TestIntReturnInTry()
@@ -81,7 +132,7 @@ namespace Leox.AopBuildTest
                     Console.Write(item.ToString() + "  ");
                 }
             }
-            Console.WriteLine("timing start" + (args != null ? args.Argument[0].ToString() : ""));
+            Console.WriteLine("timing start" + (args != null && args.Argument != null ? args.Argument[0].ToString() : ""));
         }
 
         public override void OnEnd(MethodAspectArgs args)
