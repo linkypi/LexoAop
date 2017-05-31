@@ -217,16 +217,19 @@ namespace Leox.Injector
                 ilprosor.Create(OpCodes.Nop),
                 ilprosor.Create(OpCodes.Newobj,module.Import(typeof(MethodAspectArgs).GetConstructor( new Type[] {} ))), // typeof(object[])
                 ilprosor.Create(OpCodes.Stloc,args.VarAspectArgs),
-                ilprosor.Create(OpCodes.Ldloc,args.VarAspectArgs)
              });
 
-            InitObjectArr(args.OriginMethod, module, ilprosor);
-
-            Append(ilprosor, new[] 
-             { 
-                ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspectArgs).GetMethod("set_Argument",new Type[]{ typeof(Object[]) }))),
-              }
-             );
+            if (args.OriginMethod.Parameters.Count > 0)
+            {
+                ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAspectArgs));
+                InitObjectArr(args.OriginMethod, module, ilprosor);
+                Append(ilprosor, new[] 
+                 { 
+                    ilprosor.Create(OpCodes.Callvirt,module.Import(typeof(MethodAspectArgs)
+                            .GetMethod("set_Argument",new Type[]{ typeof(Object[]) }))),
+                  }
+                 );
+            }
         }
 
         private void InitObjectArr(MethodDefinition method, ModuleDefinition module, ILProcessor ilprosor)
