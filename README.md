@@ -81,7 +81,7 @@
   - 加载程序集，找到标记有MethodAspect Attribute的方法
   - 复制该方法并生成一个新的方法copy_method，复制完成后清楚原有方法
   - 改写原有方法，首先调用AopAttribute的Start方法
-  - 执行copy_method ，执行成功则执行 OnSuccess 方法
+  - 执行copy_method ，如果该方法是实例方法则需要ldarg0加载this，执行成功则执行 OnSuccess 方法
   - copy_method 执行出错则捕获异常，异常处理提供三种处理方法，
     一种是只捕获不抛出即 UnThrow ，第二种是抛出这个ex 即ThrowNew，
 	最后一种是 ReThrow（默认） 即代码 ``` c# throw ```，保存了完整的异常跟踪链 
@@ -108,6 +108,15 @@
   编译通过后用ILSpy或者ildasm来查看对应的那部分il代码，然后只要照着里面的来写就OK。
   Injector.cs中有一个 MethodCache 类已无用，因为缓存是死的，在下次注入时模块的版本
   guid与上次注入模块的版本guid已不同，所以将旧版本的方法注入到新的模块会报错。
+  
+  很多时候注入之后会发生一些未知的错误，也不知道该怎么去调试，还要返回到自己写的c# 代码一行行查看IL指令，
+  这样就非常的蛋疼。所以这里推荐一个IL级别代码调试工具 -- dotnet il editor.
+  使用方式是
+  - 新建一个控制台项目，在执行指定方法前加一行 ```  Console.ReadKey(); ``` ，然后生成exe，也就是编译注入
+  - 然后打开该exe，这时进程就暂停了，需要输入字符，但是这个时候还不能输入
+  - 这时候打开 dotnet il editor，将该exe拖动到project explorer，找到你要执行的il代码按F9打断点
+  - 然后在这个editor找到 Debug -> Attach to process... 找到刚刚打开的exe进程后点OK
+  - 这时候返回到exe窗口随便输入一个字符就可以调试IL了
   
   注入后的代码大概长这样：
   
