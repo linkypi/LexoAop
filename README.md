@@ -2,8 +2,8 @@
 
 此项目是使用 mono.cecil 实现的编译时Aop。
 ##### 1. 使用方式
-  &emsp; &emsp;先继承基类 MethodAspect(MethodAspect 继承于 Attribute )，然后直接以Attribute的方式使用即可
-  实际应用可以看 [Leox.Transaction](https://github.com/linkypi/Leox.Transaction)
+  &emsp; &emsp;先继承基类 MethodAspect(MethodAspect 继承于 Attribute )，然后直接以Attribute的方式使用即可，
+  我的实际应用可以看 [Leox.Transaction](https://github.com/linkypi/Leox.Transaction)，即使用Transactional注解的方式来实现一个事务。
 ``` c#
     class Program
     {
