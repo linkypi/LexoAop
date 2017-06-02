@@ -23,6 +23,12 @@ namespace Leox.Aop
             }
         }
 
+        public MethodAspect First()
+        {
+            if (_list != null && _list.Count > 0) return _list.First();
+            return null;
+        }
+
         public void Add(MethodAspect item) {
             _list.Add(item);
             //默认是升序

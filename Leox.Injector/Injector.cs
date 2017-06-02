@@ -439,8 +439,10 @@ namespace Leox.Injector
 
             //如果有多个AopAttibute 那只取attributes中Order排在第一的 ExceptionStrategy
             ilprosor.Append(ilprosor.Create(OpCodes.Ldloc, args.VarAttrList));
-            ilprosor.Append(ilprosor.Create(OpCodes.Ldc_I4_0));
-            ilprosor.Append(ilprosor.Create(OpCodes.Ldelem_Ref));
+            ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MAList)
+               .GetMethod("First", new Type[] { }))));
+            // ilprosor.Append(ilprosor.Create(OpCodes.Ldc_I4_0));
+            //ilprosor.Append(ilprosor.Create(OpCodes.Ldelem_Ref));
             ilprosor.Append(ilprosor.Create(OpCodes.Callvirt, method.Module.Import(typeof(MethodAspect)
                   .GetMethod("get_ExceptionStrategy", new Type[] { }))));
             ilprosor.Append(ilprosor.Create(OpCodes.Castclass, method.Module.Import(typeof(Int32))));
