@@ -3,6 +3,7 @@
 此项目是使用 mono.cecil 实现的编译时Aop。
 ##### 1. 使用方式
   &emsp; &emsp;先继承基类 MethodAspect(MethodAspect 继承于 Attribute )，然后直接以Attribute的方式使用即可
+  实际应用可以看 [Leox.Transaction](https://github.com/linkypi/Leox.Transaction)
 ``` c#
     class Program
     {
@@ -111,7 +112,7 @@
   
   很多时候注入之后会发生一些未知的错误，也不知道该怎么去调试，还要返回到自己写的c# 代码一行行查看IL指令，
   这样就非常的蛋疼。所以这里推荐一个IL级别代码调试工具 -- dotnet il editor.
-  使用方式是
+  使用方式是 :
   - 新建一个控制台项目，在执行指定方法前加一行 ```  Console.ReadKey(); ``` ，然后生成exe，也就是编译注入
   - 然后打开该exe，这时进程就暂停了，需要输入字符，但是这个时候还不能输入
   - 这时候打开 dotnet il editor，将该exe拖动到project explorer，找到你要执行的il代码按F9打断点
