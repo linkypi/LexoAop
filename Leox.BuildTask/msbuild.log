@@ -1,0 +1,155 @@
+生成启动时间为 2017/6/3 12:31:11。
+开始生成时的环境:
+ALLUSERSPROFILE = C:\ProgramData
+APPDATA = C:\Users\BMCS\AppData\Roaming
+asl.log = Destination=file
+CLASSPATH = .;C:\Program Files\Java\jdk1.7.0_80\lib;C:\Program Files\Java\jdk1.7.0_80\lib\dt.jar;C:\Program Files\Java\jdk1.7.0_80\lib\tools.jar
+CommonProgramFiles = C:\Program Files\Common Files
+CommonProgramFiles(x86) = C:\Program Files (x86)\Common Files
+CommonProgramW6432 = C:\Program Files\Common Files
+COMPLUS_NoGuiFromShim = 1
+COMPUTERNAME = DESKTOP-T5PURJS
+ComSpec = C:\Windows\system32\cmd.exe
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING = Default
+HOMEDRIVE = C:
+HOMEPATH = \Users\BMCS
+JAVA_HOME = C:\Program Files\Java\jdk1.7.0_80
+LOCALAPPDATA = C:\Users\BMCS\AppData\Local
+LOGONSERVER = \\DESKTOP-T5PURJS
+MOZ_PLUGIN_PATH = D:\Software\Foxit Reader\plugins\
+MSBuildLoadMicrosoftTargetsReadOnly = true
+MSBUILDLOGTASKINPUTS = 1
+MSBuildTreatAllToolsVersionsAsCurrent = true
+NUMBER_OF_PROCESSORS = 4
+OneDrive = C:\Users\BMCS\OneDrive
+OS = Windows_NT
+Path = C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;C:\Program Files\Microsoft SQL Server\100\Tools\Binn\;C:\Program Files\Microsoft SQL Server\100\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\;C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\;C:\Program Files (x86)\Microsoft SQL Server\100\DTS\Binn\;d:\Software\nodejs\;C:\Program Files\Java\jdk1.7.0_80\bin;C:\Program Files\Java\jdk1.7.0_80\jre\bin;D:\Software\Git\cmd;C:\Program Files\TortoiseSVN\bin;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\BMCS\AppData\Local\Microsoft\WindowsApps;C:\Users\BMCS\AppData\Roaming\npm
+PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PkgDefApplicationConfigFile = C:\Users\BMCS\AppData\Local\Microsoft\VisualStudio\12.0\devenv.exe.config
+POSTSHARP20 = C:\Program Files (x86)\PostSharp 2.1\
+PreLoadSQLite_BaseDirectory = C:\Program Files (x86)\Red Gate\SQL Prompt 7
+PROCESSOR_ARCHITECTURE = AMD64
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 69 Stepping 1, GenuineIntel
+PROCESSOR_LEVEL = 6
+PROCESSOR_REVISION = 4501
+ProgramData = C:\ProgramData
+ProgramFiles = C:\Program Files
+ProgramFiles(x86) = C:\Program Files (x86)
+ProgramW6432 = C:\Program Files
+PSModulePath = C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+PUBLIC = C:\Users\Public
+SESSIONNAME = Console
+SystemDrive = C:
+SystemRoot = C:\Windows
+TEMP = C:\Users\BMCS\AppData\Local\Temp
+TMP = C:\Users\BMCS\AppData\Local\Temp
+USERDOMAIN = DESKTOP-T5PURJS
+USERDOMAIN_ROAMINGPROFILE = DESKTOP-T5PURJS
+USERNAME = BMCS
+USERPROFILE = C:\Users\BMCS
+VisualStudioDir = d:\Env\Documents\Visual Studio 2013
+VisualStudioEdition = Microsoft Visual Studio Ultimate 2013
+VisualStudioVersion = 12.0
+VS100COMNTOOLS = d:\DevTools\Vs2010\Common7\Tools\
+VS120COMNTOOLS = D:\DevTools\vs2013\Common7\Tools\
+VSLANG = 2052
+windir = C:\Windows
+_NO_DEBUG_HEAP = 1
+
+节点 1 上的项目“D:\projects\Leox\Leox.BuildTask\BuildSample.proj”(默认目标)。
+初始属性:
+_NO_DEBUG_HEAP = 1
+ALLUSERSPROFILE = C:\ProgramData
+APPDATA = C:\Users\BMCS\AppData\Roaming
+CLASSPATH = .;C:\Program Files\Java\jdk1.7.0_80\lib;C:\Program Files\Java\jdk1.7.0_80\lib\dt.jar;C:\Program Files\Java\jdk1.7.0_80\lib\tools.jar
+CommonProgramFiles = C:\Program Files\Common Files
+CommonProgramW6432 = C:\Program Files\Common Files
+COMPLUS_NoGuiFromShim = 1
+COMPUTERNAME = DESKTOP-T5PURJS
+ComSpec = C:\Windows\system32\cmd.exe
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING = Default
+HOMEDRIVE = C:
+HOMEPATH = \Users\BMCS
+JAVA_HOME = C:\Program Files\Java\jdk1.7.0_80
+LOCALAPPDATA = C:\Users\BMCS\AppData\Local
+LOGONSERVER = \\DESKTOP-T5PURJS
+MOZ_PLUGIN_PATH = D:\Software\Foxit Reader\plugins\
+MSBuildBinPath = C:\Windows\Microsoft.NET\Framework64\v3.5
+MSBuildExtensionsPath = C:\Program Files (x86)\MSBuild
+MSBuildExtensionsPath32 = C:\Program Files (x86)\MSBuild
+MSBuildExtensionsPath64 = C:\Program Files\MSBuild
+MSBuildLoadMicrosoftTargetsReadOnly = true
+MSBUILDLOGTASKINPUTS = 1
+MSBuildNodeCount = 1
+MSBuildProgramFiles32 = C:\Program Files (x86)
+MSBuildProjectDirectory = D:\projects\Leox\Leox.BuildTask
+MSBuildProjectDirectoryNoRoot = projects\Leox\Leox.BuildTask
+MSBuildProjectExtension = .proj
+MSBuildProjectFile = BuildSample.proj
+MSBuildProjectFullPath = D:\projects\Leox\Leox.BuildTask\BuildSample.proj
+MSBuildProjectName = BuildSample
+MSBuildStartupDirectory = D:\projects\Leox\Leox.BuildTask
+MSBuildToolsPath = C:\Windows\Microsoft.NET\Framework64\v3.5
+MSBuildToolsVersion = 3.5
+MSBuildTreatAllToolsVersionsAsCurrent = true
+MSBuildUserExtensionsPath = C:\Users\BMCS\AppData\Local\Microsoft\MSBuild
+MyTaskDirectory = D:\projects\Leox\Leox.BuildTask\
+NUMBER_OF_PROCESSORS = 4
+OneDrive = C:\Users\BMCS\OneDrive
+OS = Windows_NT
+Path = C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;C:\Program Files\Microsoft SQL Server\100\Tools\Binn\;C:\Program Files\Microsoft SQL Server\100\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\;C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\;C:\Program Files (x86)\Microsoft SQL Server\100\DTS\Binn\;d:\Software\nodejs\;C:\Program Files\Java\jdk1.7.0_80\bin;C:\Program Files\Java\jdk1.7.0_80\jre\bin;D:\Software\Git\cmd;C:\Program Files\TortoiseSVN\bin;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\BMCS\AppData\Local\Microsoft\WindowsApps;C:\Users\BMCS\AppData\Roaming\npm
+PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PkgDefApplicationConfigFile = C:\Users\BMCS\AppData\Local\Microsoft\VisualStudio\12.0\devenv.exe.config
+POSTSHARP20 = C:\Program Files (x86)\PostSharp 2.1\
+PreLoadSQLite_BaseDirectory = C:\Program Files (x86)\Red Gate\SQL Prompt 7
+PROCESSOR_ARCHITECTURE = AMD64
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 69 Stepping 1, GenuineIntel
+PROCESSOR_LEVEL = 6
+PROCESSOR_REVISION = 4501
+ProgramData = C:\ProgramData
+ProgramFiles = C:\Program Files
+ProgramW6432 = C:\Program Files
+PSModulePath = C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+PUBLIC = C:\Users\Public
+SESSIONNAME = Console
+SystemDrive = C:
+SystemRoot = C:\Windows
+TEMP = C:\Users\BMCS\AppData\Local\Temp
+TMP = C:\Users\BMCS\AppData\Local\Temp
+USERDOMAIN = DESKTOP-T5PURJS
+USERDOMAIN_ROAMINGPROFILE = DESKTOP-T5PURJS
+USERNAME = BMCS
+USERPROFILE = C:\Users\BMCS
+VisualStudioDir = d:\Env\Documents\Visual Studio 2013
+VisualStudioEdition = Microsoft Visual Studio Ultimate 2013
+VisualStudioVersion = 12.0
+VS100COMNTOOLS = d:\DevTools\Vs2010\Common7\Tools\
+VS120COMNTOOLS = D:\DevTools\vs2013\Common7\Tools\
+VSLANG = 2052
+windir = C:\Windows
+
+正在使用工具版本“3.5”进行生成。
+项目“D:\projects\Leox\Leox.BuildTask\BuildSample.proj”中的目标“AopBuildTask: (目标 ID: 2)”(入口点):
+D:\projects\Leox\Leox.BuildTask\BuildSample.proj(13,5): error MSB4062: 未能从程序集 D:\projects\Leox\Leox.BuildTask\Leox.BuildTask.dll 加载任务“AopBuildTask”。未能加载文件或程序集“file:///D:\projects\Leox\Leox.BuildTask\Leox.BuildTask.dll”或它的某一个依赖项。系统找不到指定的文件。 请确认 <UsingTask> 声明正确，该程序集及其所有依赖项都可用，并且该任务包含实现 Microsoft.Build.Framework.ITask 的公共类。
+已完成在项目“BuildSample.proj”中生成目标“AopBuildTask”的操作 - 失败。: (目标 ID: 2)
+已完成生成项目“D:\projects\Leox\Leox.BuildTask\BuildSample.proj”(默认目标)的操作 - 失败。
+
+
+项目性能摘要:
+      324 毫秒  D:\projects\Leox\Leox.BuildTask\BuildSample.proj   1 次调用
+
+目标性能摘要:
+      256 毫秒  AopBuildTask                               1 次调用
+
+生成失败。
+
+“D:\projects\Leox\Leox.BuildTask\BuildSample.proj”(默认目标) (1) ->
+(AopBuildTask 目标) -> 
+  D:\projects\Leox\Leox.BuildTask\BuildSample.proj(13,5): error MSB4062: 未能从程序集 D:\projects\Leox\Leox.BuildTask\Leox.BuildTask.dll 加载任务“AopBuildTask”。未能加载文件或程序集“file:///D:\projects\Leox\Leox.BuildTask\Leox.BuildTask.dll”或它的某一个依赖项。系统找不到指定的文件。 请确认 <UsingTask> 声明正确，该程序集及其所有依赖项都可用，并且该任务包含实现 Microsoft.Build.Framework.ITask 的公共类。
+
+    0 个警告
+    1 个错误
+
+已用时间 00:00:00.62

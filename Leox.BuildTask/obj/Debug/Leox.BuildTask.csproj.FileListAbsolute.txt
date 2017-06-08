@@ -18,3 +18,4 @@ E:\Projects\LexoAop\Leox.BuildTask\obj\Debug\Leox.BuildTask.csprojResolveAssembl
 E:\Projects\LexoAop\Leox.BuildTask\obj\Debug\Leox.BuildTask.dll
 E:\Projects\LexoAop\Leox.BuildTask\obj\Debug\Leox.BuildTask.pdb
 E:\Projects\LexoAop\Leox.BuildTask\bin\Debug\Leox.Injector.dll
+D:\projects\Leox\Leox.BuildTask\bin\Debug\BuildSample.proj

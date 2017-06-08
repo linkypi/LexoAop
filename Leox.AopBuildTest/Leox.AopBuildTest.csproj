@@ -88,17 +88,17 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-   <PropertyGroup> 
-   <MyTaskDirectory>libs\</MyTaskDirectory> 
-   </PropertyGroup> 
+   <!-- <PropertyGroup>  -->
+   <!-- <MyTaskDirectory>libs\</MyTaskDirectory>  -->
+   <!-- </PropertyGroup>  -->
   <!-- UsingTask中的TaskName一定要对应类名-->
-  <UsingTask TaskName="AopBuildTask" AssemblyFile="$(MyTaskDirectory)Leox.BuildTask.dll" /> 
-  <Target Name="BeforeBuild"> 
-  </Target> 
-  <Target Name="AfterBuild"> 
-  <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" TaskFile="Leox.Injector.exe"> 
-  <Output PropertyName="path" TaskParameter="Paths" /> 
-  </AopBuildTask> 
-  <Message Text="build path: $(path)" /> 
-  </Target> 
+  <!-- <UsingTask TaskName="AopBuildTask" AssemblyFile="$(MyTaskDirectory)Leox.BuildTask.dll" />  -->
+  <!-- <Target Name="BeforeBuild">  -->
+  <!-- </Target>  -->
+  <!-- <Target Name="AfterBuild">  -->
+  <!-- <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" TaskFile="Leox.Injector.exe">  -->
+  <!-- <Output PropertyName="path" TaskParameter="Paths" />  -->
+  <!-- </AopBuildTask>  -->
+  <!-- <Message Text="build path: $(path)" />  -->
+  <!-- </Target>  -->
 </Project>

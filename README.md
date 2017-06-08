@@ -196,9 +196,11 @@
     <Message Text="build path: $(path)" />
   </Target>
 ```
- 若要调试BuidTask项目请在 项目属性-> 调试 做以下配置
- 1. 启动操作 -> 选中启动外部程序，输入 C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe ，
-   注意区分32、64位的Framework，如果填错则会报错无法调试
+ 若要调试BuidTask项目，需要做以下配置
+ 1. 在项目中新建一个文件 BuildSample.proj，右键该文件属性设置复制到输出目录。
+ 1. 项目右键打开属性，选择调试 -> 启动操作 -> 选中启动外部程序，
+    输入 C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe ，
+    注意区分32、64位的Framework，如果填错则会报错无法调试
  2. 命令行参数输入： BuildSample.proj /fl /flp:v=diag ，BuildSample.proj 必须有
  3. 工作目录填写该项目对应的bin/Debug全路径
  

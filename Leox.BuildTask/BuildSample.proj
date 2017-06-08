@@ -10,7 +10,7 @@
   <!-- <Target Name="BeforeBuild"> -->
   <!-- </Target> -->
   <Target Name="AopBuildTask">
-    <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" />
+    <AopBuildTask OutputFile="$(MSBuildProjectFullPath)" TaskFile="Leo.Injector.exe"/>
   </Target>
   
   <!-- <PropertyGroup> -->
